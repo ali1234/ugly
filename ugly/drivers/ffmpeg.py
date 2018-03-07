@@ -21,14 +21,15 @@ class FfmpegBase(Base, Virtual):
     """
     Records output to a video file.
     """
+
     def __enter__(self):
         self.__scale = 4
-        self.__ffmpeg = subprocess.Popen("ffmpeg -i pipe: -r 30 -pix_fmt yuv420p video.webm".split(), stdin=subprocess.PIPE)
+        self.__ffmpeg = subprocess.Popen("ffmpeg -y -i pipe: -r 30 -pix_fmt yuv420p video.webm".split(), stdin=subprocess.PIPE)
         return self
 
     def show(self):
 
-        outbuf = np.rot90(outbuf, self.rotation + self.physical_rotation, axes=(0, 1))
+        outbuf = np.rot90(self.buf, self.rotation + self.physical_rotation, axes=(0, 1))
 
         imbuf = np.repeat(np.repeat(outbuf, self.__scale, axis=0), self.__scale, axis=1)
         for i in range(0, self.width):

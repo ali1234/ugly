@@ -49,8 +49,8 @@ class Matrix(Effect):
         self.buf = np.random.randint(0, 0x10f, (height, width), dtype=np.int16)
 
     def __call__(self, t):
-        self.buf = self.buf + (np.random.randint(-4, 6, (self.height, self.width), dtype=np.int16))
         if t - self.t > 0.05:
+            self.buf = self.buf + (np.random.randint(-4, 6, (self.height, self.width), dtype=np.int16))
             fall = self.buf > 0xff
             subs = fall * np.random.randint(0x7f, 0x17f, (self.height, self.width), dtype=np.int16)
             adds = np.roll(subs, 1, axis=0) * 0.75
@@ -359,6 +359,11 @@ def main():
                         this driver. One of: terminal, ffmpeg, or auto for
                         any available virtual driver.
                         """)
+    parser.add_argument('-F', '--fixed-timestep', action='store_true',
+                        help="""
+                        Use a fixed frame time step of 30 fps. Use when recording
+                        video.
+                        """)
 
     args = parser.parse_args()
 
@@ -383,7 +388,10 @@ def main():
             while True:
                 start = now
                 while True:
-                    now = time.monotonic()
+                    if args.fixed_timestep:
+                        now += 1/30
+                    else:
+                        now = time.monotonic()
                     remaining = effects[0][1] - (now - start)
                     if remaining < 0:
                         remaining = 0
