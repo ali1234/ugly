@@ -18,12 +18,13 @@ import numpy as np
 # Here just import whichever display you want to use
 # This could be autodetected if the hardware supports it
 from ugly.devices import UnicornHatHD as Display
+from ugly.drivers.base import Virtual
 
 display = Display(driver=None) # autodetect driver
 
 display.rotation = 2
 
-if hasattr(display, 'physical_rotation'):
+if isinstance(display, Virtual):
     # Yes, i know what you are going to say. i should make all displays
     # have this property whether they are virtual or not.
     # But that just seems wrong to me. Attempting to set physical rotation
@@ -35,6 +36,7 @@ if hasattr(display, 'physical_rotation'):
 
 # The key point is that all the following code will run on any device, real or
 # emulated. All you have to change is which one you import.
+# (Or import an autodetecting factory.)
 
 
 # helper functions
