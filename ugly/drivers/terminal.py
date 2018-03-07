@@ -13,16 +13,19 @@ import sys
 
 import numpy as np
 
-from ugly.drivers.base import Framebuffer, Virtual
+from ugly.drivers.base import Base, Monitor, Framebuffer, Virtual
 
-class Terminal(Framebuffer, Virtual):
+__all__ = ['Terminal', 'TerminalMonitor']
+
+
+class TerminalBase(Base, Virtual):
     """
     Emulates a graphics device on the terminal.
     """
 
-    def __init__(self, width, height, channels, depth):
-        super().__init__(width, height, channels, depth)
+    def __enter__(self):
         sys.stdout.write('\033[2J\033[?25l')
+        return self
 
     def show(self):
         r = 0
@@ -44,5 +47,13 @@ class Terminal(Framebuffer, Virtual):
             sys.stdout.write(s)
         sys.stdout.flush()
 
-    def off(self):
+    def __exit__(self, t, value, traceback):
         sys.stdout.write('\033[0m\033[{};0H\033[?25h'.format(self.height+3))
+
+
+class Terminal(Framebuffer, TerminalBase):
+    pass
+
+
+class TerminalMonitor(Monitor, TerminalBase):
+    pass

@@ -8,27 +8,29 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
-
 import subprocess
 import numpy as np
 from PIL import Image
 
-from ugly.drivers.base import Framebuffer, Virtual
+from ugly.drivers.base import Base, Monitor, Framebuffer, Virtual
 
-class Ffmpeg(Framebuffer, Virtual):
+__all__ = ['Ffmpeg', 'FfmpegBase']
+
+
+class FfmpegBase(Base, Virtual):
     """
     Records output to a video file.
     """
-    def __init__(self, width, height, channels, depth, scale=8):
-        super().__init__(width, height, channels, depth)
-        self.__scale = scale
+    def __enter__(self):
+        self.__scale = 4
         self.__ffmpeg = subprocess.Popen("ffmpeg -i pipe: -r 30 -pix_fmt yuv420p video.webm".split(), stdin=subprocess.PIPE)
+        return self
 
     def show(self):
 
-        # TODO: handle self.rotation and self.physical_rotation
+        outbuf = np.rot90(outbuf, self.rotation + self.physical_rotation, axes=(0, 1))
 
-        imbuf = np.repeat(np.repeat(self.buf, self.__scale, axis=0), self.__scale, axis=1)
+        imbuf = np.repeat(np.repeat(outbuf, self.__scale, axis=0), self.__scale, axis=1)
         for i in range(0, self.width):
             imbuf[:,i*self.__scale,:] = 0
         for i in range(0, self.height):
@@ -36,6 +38,14 @@ class Ffmpeg(Framebuffer, Virtual):
         imbuf = np.pad(imbuf, ((0,1), (0,1), (0,1)), mode='wrap')
         Image.fromarray(imbuf).save(self.__ffmpeg.stdin, format='png')
 
-    def off(self):
+    def __exit__(self, t, value, traceback):
         self.__ffmpeg.stdin.close()
         self.__ffmpeg.wait()
+
+
+class Ffmpeg(Framebuffer, FfmpegBase):
+    pass
+
+
+class FfmpegMonitor(Monitor, FfmpegBase):
+    pass

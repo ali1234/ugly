@@ -8,7 +8,6 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
-
 import numpy as np
 
 
@@ -59,7 +58,6 @@ class Base(object):
         pass
 
 
-
 class Virtual(object):
     """
     Base for virtual drivers which are not backed by physical hardware.
@@ -78,7 +76,6 @@ class Virtual(object):
         self.__physical_rotation = rotation % 4
 
 
-
 class Framebuffer(Base):
     """
     Base for drivers which must manage their own internal framebuffer.
@@ -86,3 +83,30 @@ class Framebuffer(Base):
 
     def __init__(self, width: int, height: int, channels: int, depth: int):
         super().__init__(np.zeros((height, width, channels), dtype=np.uint8), depth)
+
+
+class Monitor(Base):
+    """
+    Base for a virtual device which monitors (mirrors) another device.
+    """
+
+    def __init__(self, device):
+        super().__init__(device.buf, device.depth)
+        self.__device = device
+        self.__rotation = self.__device.rotation
+
+    def __enter__(self):
+        self.__device.__enter__()
+        super().__enter__()
+        return self
+
+    def rotation_changed(self):
+        self.__device.rotation = self.__rotation
+
+    def show(self):
+        super().show()
+        self.__device.show()
+
+    def __exit__(self, t, value, traceback):
+        super().__exit__(t, value, traceback)
+        self.__device.__exit__(t, value, traceback)

@@ -10,196 +10,227 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
-
-import time, math, random
-
+import math, random
 import numpy as np
-
-# Here just import whichever display you want to use
-# This could be autodetected if the hardware supports it
-from ugly.devices import UnicornHatHD as Display
-from ugly.drivers.base import Virtual
-
-display = Display(driver=None) # autodetect driver
-
-display.rotation = 2
-
-if isinstance(display, Virtual):
-    # Yes, i know what you are going to say. i should make all displays
-    # have this property whether they are virtual or not.
-    # But that just seems wrong to me. Attempting to set physical rotation
-    # on real hardware means the programmer made a mistake.
-    display.physical_rotation = 2
-
-# After this point nothing much interesting happens in terms of the class stuff.
-# It is all bit twiddling graphics effects. :)
-
-# The key point is that all the following code will run on any device, real or
-# emulated. All you have to change is which one you import.
-# (Or import an autodetecting factory.)
-
 
 # helper functions
 
-def distance_from_centre(dx = 0, dy = 0):
-    ox = dx + ((display.width/2) - 0.5)
-    oy = dy + ((display.height/2) - 0.5)
-    # nasty hack warning: the +1 here is to make it work with blinkt which is 1 pixel tall
-    x = np.squeeze(np.arange(0, display.width+1, dtype=np.float)[:, np.newaxis] - ox)
-    y = np.squeeze(np.arange(0, display.height+1, dtype=np.float)[:, np.newaxis] - oy)
-    return x[:-1], y[:-1]
-
-def solid(a):
+def Solid(a):
     s = np.array([[a]], dtype=np.float)
     def _solid(t):
         return s
     return _solid
 
-def cycle(t):
+def Cycle(t):
     return np.array([[t*0.2]], dtype=np.float)
+
+
+class Effect(object):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def distance_from_centre(self, dx=0, dy=0):
+        ox = dx + ((self.width / 2) - 0.5)
+        oy = dy + ((self.height / 2) - 0.5)
+        # nasty hack warning: the +1 here is to make it work with blinkt which is 1 pixel tall
+        x = np.squeeze(np.arange(0, self.width + 1, dtype=np.float)[:, np.newaxis] - ox)
+        y = np.squeeze(np.arange(0, self.height + 1, dtype=np.float)[:, np.newaxis] - oy)
+        return x[:-1], y[:-1]
 
 
 # RGB effects
 
-matrix_buf = np.random.randint(0, 0x10f, (display.height, display.width), dtype=np.int16)
-matrix_t = 0
-def matrix(t):
-    global matrix_buf, matrix_t
-    matrix_buf = matrix_buf + (np.random.randint(-4, 6, (display.height, display.width), dtype=np.int16))
-    if t - matrix_t > 0.05:
-        fall = matrix_buf > 0xff
-        subs = fall * np.random.randint(0x7f, 0x17f, (display.height, display.width), dtype=np.int16)
-        adds = np.roll(subs, 1, axis=0) * 0.75
-        adds[0, :] = (np.random.randint(0, 64, (1, display.width), dtype=np.uint8) == 0) * 0xff
-        matrix_buf = matrix_buf + adds - subs
-        matrix_t = t
-    return np.clip(np.stack([matrix_buf-0xff, matrix_buf, matrix_buf-0xff], axis=-1), 0, 0xff)
+class Matrix(Effect):
+
+    def __init__(self, width, height):
+        super().__init__(width, height)
+        self.t = 0
+        self.buf = np.random.randint(0, 0x10f, (height, width), dtype=np.int16)
+
+    def __call__(self, t):
+        self.buf = self.buf + (np.random.randint(-4, 6, (self.height, self.width), dtype=np.int16))
+        if t - self.t > 0.05:
+            fall = self.buf > 0xff
+            subs = fall * np.random.randint(0x7f, 0x17f, (self.height, self.width), dtype=np.int16)
+            adds = np.roll(subs, 1, axis=0) * 0.75
+            adds[0, :] = (np.random.randint(0, 64, (1, self.width), dtype=np.uint8) == 0) * 0xff
+            self.buf = self.buf + adds - subs
+            self.t = t
+        return np.clip(np.stack([self.buf-0xff, self.buf, self.buf-0xff], axis=-1), 0, 0xff)
 
 
 # boolean effects
 
-def checker(t):
-    x, y = distance_from_centre(dx = math.sin(t * 1.333) * display.width, dy = math.cos(t * 2.0) * display.width)
-    sc = (math.cos(-t*0.75)) + 2.0
-    s = math.sin(t);
-    c = math.cos(t);
-    xs = ((x * c - y[:, np.newaxis] * s) - math.sin(t / 2.0) * 0.1) / sc;
-    ys = ((x * s + y[:, np.newaxis] * c) - math.cos(t / 2.0) * 0.1) / sc;
-    return (np.sin(xs) > 0) ^ (np.cos(ys) > 0)
+class Checker(Effect):
 
-def beams(nbeams = None):
-    if nbeams is None:
-        nbeams = random.choice([3, 5, 6])
-    m = 2 * math.pi / nbeams
-    s = 3 / nbeams
-    def _beams(t):
-        x, y = distance_from_centre(dx = math.sin(t * 3.2) * 3.0, dy = math.cos(t * 1.5) * 3.0)
-        return (np.mod(np.arctan2(x, y[:, np.newaxis]) + (math.pi) + t, m) - s) > 0
-    return _beams
+    def __call__(self, t):
+        x, y = self.distance_from_centre(dx = math.sin(t * 1.333) * 12.0, dy = math.cos(t * 2.0) * 12.0)
+        sc = (math.cos(-t*0.75)) + 2.0
+        s = math.sin(t)
+        c = math.cos(t)
+        xs = ((x * c - y[:, np.newaxis] * s) - math.sin(t / 2.0) * 0.1) / sc
+        ys = ((x * s + y[:, np.newaxis] * c) - math.cos(t / 2.0) * 0.1) / sc
+        return (np.sin(xs) > 0) ^ (np.cos(ys) > 0)
 
-def zoomrings(t):
-    x, y = distance_from_centre(dx = math.sin(t * 3.2) * 3.0, dy = math.cos(t * 1.5) * 3.0)
-    return (np.mod(np.sqrt((x**2) + (y**2)[:, np.newaxis])-(t*10), 10) - 5) > 0
 
-_roni = np.unpackbits(np.array([255, 255, 254, 127, 252,  63, 225, 135, 193, 131, 192,   3, 192,
-     3, 199, 227, 229, 163, 247, 231, 240,  39, 243, 135, 224,  15,
-     240,  31, 253, 127, 255, 255], dtype=np.uint8)).reshape(16, 16) > 0
-def roni(t):
-    if display.width == 16 and display.height == 16:
-        return _roni
-    else:
-        return np.array([[True]], dtype=np.bool)
+class Beams(Effect):
 
-def metaballs(num=5):
-    dt = np.random.ranf((1, num))*15.0
-    sx = np.random.ranf((1, num))*2.0+1.5
-    sy = np.random.ranf((1, num))*2.0+1.5
-    def _metaballs(t):
-        x, y = distance_from_centre(dx=np.sin(sx*t+dt)*6, dy=np.cos(sy*t+dt)*6)
+    def __init__(self, width, height, nbeams=None):
+        super().__init__(width, height)
+        if nbeams is None:
+            self.nbeams = random.choice([3, 5, 6])
+        self.m = 2 * math.pi / self.nbeams
+        self.s = 3 / self.nbeams
+
+    def __call__(self, t):
+        x, y = self.distance_from_centre(dx = math.sin(t * 3.2) * 3.0, dy = math.cos(t * 1.5) * 3.0)
+        return (np.mod(np.arctan2(x, y[:, np.newaxis]) + (math.pi) + t, self.m) - self.s) > 0
+
+
+class ZoomRings(Effect):
+
+    def __call__(self, t):
+        x, y = self.distance_from_centre(dx = math.sin(t * 3.2) * 3.0, dy = math.cos(t * 1.5) * 3.0)
+        return (np.mod(np.sqrt((x**2) + (y**2)[:, np.newaxis])-(t*10), 10) - 5) > 0
+
+
+class Roni(Effect):
+
+    roni = np.unpackbits(np.array([255, 255, 254, 127, 252,  63, 225, 135, 193, 131, 192,   3, 192,
+                                     3, 199, 227, 229, 163, 247, 231, 240,  39, 243, 135, 224,  15,
+                                   240,  31, 253, 127, 255, 255], dtype=np.uint8)).reshape(16, 16) > 0
+
+    def __call__(self, t):
+        if self.width == 16 and self.height == 16:
+            return self.roni
+        else:
+            return np.array([[True]], dtype=np.bool)
+
+
+class Metaballs(Effect):
+    def __init__(self, width, height, num=5):
+        super().__init__(width, height)
+        self.num = num
+        self.dt = np.random.ranf((1, num))*15.0
+        self.sx = np.random.ranf((1, num))*2.0+1.5
+        self.sy = np.random.ranf((1, num))*2.0+1.5
+
+    def __call__(self, t):
+        x, y = self.distance_from_centre(dx=np.sin(self.sx*t+self.dt)*6, dy=np.cos(self.sy*t+self.dt)*6)
         return np.sum(1 / np.sqrt((x**2) + (y**2)[:, np.newaxis]), axis=-1) > 0.9
-    return _metaballs
 
-life_buf = np.random.randint(0, 255, (display.height+2, display.width), dtype=np.uint8) == 0
-life_t = 0
-def life(t):
-    global life_buf, life_t
-    if t - life_t > 0.05:
-        life_buf = np.roll(life_buf, -1, axis=0)
-        life_buf[-1] = np.random.randint(0, 3, (1, display.width), dtype=np.uint8) == 0
-        hneighbours = np.roll(life_buf, 1, axis=0)*1 + life_buf*1 + np.roll(life_buf, -1, axis=0)*1
-        neighbours = np.roll(hneighbours, 1, axis=1)*1 + hneighbours*1 + np.roll(hneighbours, -1, axis=1)*1 - life_buf
-        life_buf = life_buf & (neighbours > 1) & (neighbours < 4)
-        life_buf = life_buf | (neighbours == 3)
-        life_t = t
-    return life_buf[2:]
+
+class Life(Effect):
+
+    def __init__(self, width, height):
+        super().__init__(width, height)
+        self.t = 0
+        self.buf = np.random.randint(0, 255, (self.height+2, self.width), dtype=np.uint8) == 0
+
+    def __call__(self, t):
+        if t - self.t > 0.05:
+            self.buf = np.roll(self.buf, -1, axis=0)
+            self.buf[-1] = np.random.randint(0, 3, (1, self.width), dtype=np.uint8) == 0
+            hneighbours = np.roll(self.buf, 1, axis=0)*1 + self.buf*1 + np.roll(self.buf, -1, axis=0)*1
+            neighbours = np.roll(hneighbours, 1, axis=1)*1 + hneighbours*1 + np.roll(hneighbours, -1, axis=1)*1 - self.buf
+            self.buf = self.buf & (neighbours > 1) & (neighbours < 4)
+            self.buf = self.buf | (neighbours == 3)
+            self.t = t
+        return self.buf[2:]
 
 
 # grey effects
 
-tinylife_buf = np.random.randint(0, 255, ((display.height*4)+2, display.width*4), dtype=np.uint8) == 0
-tinylife_t = 0
-def tinylife(t):
-    global tinylife_buf, tinylife_t
-    if t - tinylife_t > 0.02:
-        tinylife_buf = np.roll(tinylife_buf, 1, axis=0)
-        tinylife_buf[0] = np.random.randint(0, 3, (1, (display.width*4)), dtype=np.uint8) == 0
-        hneighbours = np.roll(tinylife_buf, 1, axis=0)*1 + tinylife_buf*1 + np.roll(tinylife_buf, -1, axis=0)*1
-        neighbours = np.roll(hneighbours, 1, axis=1)*1 + hneighbours*1 + np.roll(hneighbours, -1, axis=1)*1 - tinylife_buf
-        tinylife_buf = tinylife_buf & (neighbours > 1) & (neighbours < 4)
-        tinylife_buf = tinylife_buf | (neighbours == 3)
-        tinylife_t = t
-    return np.sum(np.sum(tinylife_buf[:-2].reshape(display.height, 4, display.width, 4), axis=3), axis=1) / 8
+class TinyLife(Effect):
 
-def rings(t):
-    x, y = distance_from_centre(dx = math.sin(t * 2.0) * display.width, dy = math.cos(t * 3.0) * display.width)
-    sc = (math.cos(t * 5.0) * 10.0) + 20.0
-    return np.mod(np.sqrt((x**2) + (y**2)[:, np.newaxis])/sc, 1)
+    def __init__(self, width, height):
+        super().__init__(width, height)
+        self.t = 0
+        self.buf = np.random.randint(0, 255, ((self.height*4)+2, self.width*4), dtype=np.uint8) == 0
 
-def swirl(t):
-    x, y = distance_from_centre()
-    dist = (np.sqrt((x**2) + (y**2)[:, np.newaxis]) * (0.5 + (0.2*math.sin(t*0.5)))) + (-t * 5)
-    s = np.sin(dist);
-    c = np.cos(dist);
-    xs = x * c - y[:, np.newaxis] * s;
-    ys = x * s + y[:, np.newaxis] * c;
-    return np.mod((np.abs(xs + ys) * 0.05) + (0.1 * t), 1)
+    def __call__(self, t):
+        if t - self.t > 0.02:
+            self.buf = np.roll(self.buf, 1, axis=0)
+            self.buf[0] = np.random.randint(0, 3, (1, (self.width*4)), dtype=np.uint8) == 0
+            hneighbours = np.roll(self.buf, 1, axis=0)*1 + self.buf*1 + np.roll(self.buf, -1, axis=0)*1
+            neighbours = np.roll(hneighbours, 1, axis=1)*1 + hneighbours*1 + np.roll(hneighbours, -1, axis=1)*1 - self.buf
+            self.buf = self.buf & (neighbours > 1) & (neighbours < 4)
+            self.buf = self.buf | (neighbours == 3)
+            self.t = t
+        return np.sum(np.sum(self.buf[:-2].reshape(self.height, 4, self.width, 4), axis=3), axis=1) / 8
 
-def tunnel(nbeams=None):
-    b = beams(nbeams)
-    def _tunnel(t):
-        return (zoomrings(t) * 0.45) + (b(t) * 0.45) + 0.1
-    return _tunnel
 
-wind_buf = np.random.randint(0, 6, (display.height, display.width), dtype=np.uint8) == 0
-wind_acc_buf = np.zeros((display.height, display.width), dtype=np.float)
-wind_t = 0
-def wind(t):
-    global wind_buf, wind_acc_buf, wind_t
-    if t - wind_t > 0.02:
-        wind_buf = np.roll(wind_buf, 1, axis=1)
-        wind_buf[:,0] = (np.random.randint(0, 6, (display.height,), dtype=np.uint8) == 0)
-        wind_acc_buf = np.clip((wind_acc_buf - 0.1), 0, 1) + wind_buf
-        wind_t = t
-        wind_acc_buf = np.clip(wind_acc_buf, 0.1, 1.0)
-    return wind_acc_buf
+class Rings(Effect):
 
-diamonds_buf = np.random.randint(0, 8, (display.height, display.width), dtype=np.uint16)
-diamonds_t = 0
-def diamonds(t):
-    global diamonds_buf, diamonds_t
-    if t - diamonds_t > 0.05:
-        diamonds_buf = np.amax(np.stack([
-            diamonds_buf,
-            np.roll(diamonds_buf, 1, axis=0),
-            np.roll(diamonds_buf, -1, axis=0),
-            np.roll(diamonds_buf, 1, axis=1),
-            np.roll(diamonds_buf, -1, axis=1)
-        ]), axis=0)
-        diamonds_buf[random.randint(0, display.height-1), random.randint(0, display.width-1)] += 1
-        if np.all(diamonds_buf > 256):
-            diamonds_buf = diamonds_buf - 256
-        diamonds_t = t
-    return (diamonds_buf & 0x3) / 3
+    def __call__(self, t):
+        x, y = self.distance_from_centre(dx = math.sin(t * 2.0) * 16.0, dy = math.cos(t * 3.0) * 16.0)
+        sc = (math.cos(t * 5.0) * 10.0) + 20.0
+        return np.mod(np.sqrt((x**2) + (y**2)[:, np.newaxis])/sc, 1)
+
+
+class Swirl(Effect):
+
+    def __call__(self, t):
+        x, y = self.distance_from_centre()
+        dist = (np.sqrt((x**2) + (y**2)[:, np.newaxis]) * (0.5 + (0.2*math.sin(t*0.5)))) + (-t * 5)
+        s = np.sin(dist)
+        c = np.cos(dist)
+        xs = x * c - y[:, np.newaxis] * s
+        ys = x * s + y[:, np.newaxis] * c
+        return np.mod((np.abs(xs + ys) * 0.05) + (0.1 * t), 1)
+
+
+class Tunnel(Effect):
+
+    def __init__(self, width, height, nbeams=None):
+        super().__init__(width, height)
+        self.b = Beams(width, height, nbeams)
+        self.z = ZoomRings(width, height)
+
+    def __call__(self, t):
+        return (self.z(t) * 0.45) + (self.b(t) * 0.45) + 0.1
+
+
+class Wind(Effect):
+
+    def __init__(self, width, height):
+        super().__init__(width, height)
+        self.t = 0
+        self.buf = np.random.randint(0, 6, (height, width), dtype=np.uint8) == 0
+        self.acc_buf = np.zeros((self.height, self.width), dtype=np.float)
+
+    def __call__(self, t):
+        if t - self.t > 0.02:
+            self.buf = np.roll(self.buf, 1, axis=1)
+            self.buf[:,0] = (np.random.randint(0, 6, (self.height,), dtype=np.uint8) == 0)
+            self.acc_buf = np.clip((self.acc_buf - 0.1), 0, 1) + self.buf
+            self.t = t
+            self.acc_buf = np.clip(self.acc_buf, 0.1, 1.0)
+        return self.acc_buf
+
+
+class Diamonds(Effect):
+
+    def __init__(self, width, height):
+        super().__init__(width, height)
+        self.buf = np.random.randint(0, 8, (self.height, self.width), dtype=np.uint16)
+        self.t = 0
+
+    def __call__(self, t):
+        if t - self.t > 0.05:
+            self.buf = np.amax(np.stack([
+                self.buf,
+                np.roll(self.buf, 1, axis=0),
+                np.roll(self.buf, -1, axis=0),
+                np.roll(self.buf, 1, axis=1),
+                np.roll(self.buf, -1, axis=1)
+            ]), axis=0)
+            self.buf[random.randint(0, self.height-1), random.randint(0, self.width-1)] += 1
+            if np.all(self.buf > 256):
+                self.buf = self.buf - 256
+            self.t = t
+        return (self.buf & 0x3) / 3
 
 
 # colorspace conversions
@@ -259,100 +290,128 @@ def add(a, b):
 
 # choose a random effect
 
-def random_ca():
-    mask = random.choice([checker, zoomrings, beams(), metaballs()])
+def random_ca(width, height):
+    mask = random.choice([Checker, ZoomRings, Beams, Metaballs])(width, height)
     return chromatic_aberration(mask)
 
-def random_mult():
-    grey = random.choice([swirl, rings])
+def random_mult(width, height):
+    grey = random.choice([Swirl, Rings])(width, height)
     colr = random.choice([hue, trippy])
-    mask = random.choice([checker, diamonds, tunnel(), zoomrings, beams(), life, tinylife, wind, metaballs()])
+    mask = random.choice([Checker, Tunnel, ZoomRings, Beams, Life, TinyLife, Metaballs, Wind, Diamonds])(width, height)
     return multiply(colr(grey), mask)
 
-def random_invert_mult():
+def random_invert_mult(width, height):
     # functions are composable in complex ways but on the small screen
     # it mostly ends up looking messy if too much stuff is going on
-    grey = random.choice([swirl])
+    grey = random.choice([Swirl])(width, height)
     colr = random.choice([hue, trippy])
     if random.choice([True, False]):
-        mask = random.choice([zoomrings, beams()])
+        mask = random.choice([ZoomRings, Beams])(width, height)
         return add(multiply(colr(grey), mask), multiply(colr(shift(grey)), invert(mask)))
     else:
-        mask = random.choice([life, metaballs()])
+        mask = random.choice([Life, Metaballs])()
         return multiply(colr(grey), invert(mask))
 
-def random_matrix():
+def random_matrix(width, height):
     if random.randint(0,4) == 0:
-        return multiply(matrix, roni)
+        return multiply(Matrix(width, height), Roni(width, height))
     else:
-        return matrix
+        return Matrix(width, height)
 
-def random_simple():
-    grey = random.choice([swirl, rings])
+def random_simple(width, height):
+    grey = random.choice([Swirl, Rings])(width, height)
     colour = random.choice([hue, trippy])
     return colour(grey)
 
-def random_effect():
+def random_effect(width, height):
     return random.choice([
         random_ca,
         random_mult,
         random_mult,
         random_matrix,
         random_simple
-    ])()
+    ])(width, height)
 
+def intro_effect(width, height):
+    return multiply(hue(Rings(width, height)), Roni(width, height))
 
+def main():
 
+    import time, argparse
 
+    from ugly.devices import Display, GetDevices
+    from ugly.drivers.base import Virtual
 
-# playlist
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--device', type=str, default='UnicornHatHD',
+                        help="""
+                        Device type to control or emulate. One of: {}.
+                        """.format(', '.join(GetDevices())))
+    parser.add_argument('-D', '--driver', type=str, default='auto',
+                        help="""
+                        Driver for device. One of: legacy, terminal, ffmpeg.
+                        or auto to use any available driver, or autoemu for
+                        any available virtual driver.
+                        """)
+    parser.add_argument('-M', '--monitor', type=str, default=None,
+                        help="""
+                        Enable debug monitoring of the main device through
+                        this driver. One of: terminal, ffmpeg, or auto for
+                        any available virtual driver.
+                        """)
 
-effect_time = 10 # seconds
-effects_count = 0
-effects_limit = None
-effects = [
-    (multiply(hue(rings), roni), effect_time),
-    (random_effect(), effect_time),
-]
+    args = parser.parse_args()
 
+    with Display(device=args.device, driver=args.driver, monitor=args.monitor) as display:
 
-# main loop
+        effect_time = 10  # seconds
+        effects_count = 0
+        effects_limit = None
+        effects = [
+            (intro_effect(display.width, display.height), effect_time),
+            (random_effect(display.width, display.height), effect_time),
+        ]
 
-now = time.monotonic()
+        display.rotation = 2
 
-try:
-    while True:
-        start = now
-        while True:
-            now = time.monotonic()
-            remaining = effects[0][1] - (now - start)
-            if remaining < 0:
-                remaining = 0
-            if display.channels == 3:
-                display.buf[:] = effects[0][0](now)
-                if remaining < 1:
-                    display.buf[:] = display.buf * remaining
-                    display.buf[:] = display.buf + (effects[1][0](now) * (1-remaining))
-            elif display.channels == 1:
-                display.buf[:,:,0] = effects[0][0](now)[:,:,1]
-                if remaining < 1:
-                    display.buf[:,:,0] = display.buf[:,:,0] * remaining
-                    display.buf[:,:,0] = display.buf[:,:,0] + (effects[1][0](now)[:,:,1] * (1-remaining))
+        if isinstance(display, Virtual):
+            display.physical_rotation = 2
 
-            display.show()
-            if remaining == 0:
-                break
+        now = time.monotonic()
 
-            time.sleep(0.001)
+        try:
+            while True:
+                start = now
+                while True:
+                    now = time.monotonic()
+                    remaining = effects[0][1] - (now - start)
+                    if remaining < 0:
+                        remaining = 0
+                    if display.channels == 3:
+                        display.buf[:] = effects[0][0](now)
+                        if remaining < 1:
+                            display.buf[:] = display.buf * remaining
+                            display.buf[:] = display.buf + (effects[1][0](now) * (1-remaining))
+                    elif display.channels == 1:
+                        display.buf[:,:,0] = effects[0][0](now)[:,:,1]
+                        if remaining < 1:
+                            display.buf[:,:,0] = display.buf[:,:,0] * remaining
+                            display.buf[:,:,0] = display.buf[:,:,0] + (effects[1][0](now)[:,:,1] * (1-remaining))
 
-        effect = effects.pop(0)
-        effects.append((random_effect(), effect_time))
-        effects_count += 1
-        if effects_limit is not None and effects_count >= effects_limit:
-            break
-except KeyboardInterrupt:
-    pass
-except Exception as e:
-    raise
-finally:
-    display.off()
+                    display.show()
+                    if remaining == 0:
+                        break
+
+                    time.sleep(0.001)
+
+                effect = effects.pop(0)
+                effects.append((random_effect(display.width, display.height), effect_time))
+                effects_count += 1
+                if effects_limit is not None and effects_count >= effects_limit:
+                    break
+
+        except KeyboardInterrupt:
+            pass
+
+if __name__ == '__main__':
+    main()

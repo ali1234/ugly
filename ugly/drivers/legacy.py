@@ -23,11 +23,14 @@ class Legacy(Base):
         super().__init__(legacy._buf, depth)
         self.__legacy = legacy
 
+    def __enter__(self):
+        return self
+
     def rotation_changed(self):
         self.__legacy.rotation(self.rotation*90)
 
     def show(self):
         self.__legacy.show()
 
-    def off(self):
+    def __exit__(self, t, value, traceback):
         self.__legacy.off()
