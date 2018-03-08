@@ -66,6 +66,7 @@ class Virtual(object):
 
     def __init__(self):
         self.__orientation = 0
+        self.__scale = 16
 
     @property
     def orientation(self):
@@ -81,6 +82,10 @@ class Virtual(object):
         Override this if you need to forward rotation events some place.
         """
         pass
+
+    @property
+    def scale(self):
+        return self.__scale
 
 
 class Framebuffer(Base):

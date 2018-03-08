@@ -23,7 +23,6 @@ class FfmpegBase(Base, Virtual):
     """
 
     def __enter__(self):
-        self.__scale = 4
         self.__ffmpeg = subprocess.Popen("ffmpeg -y -i pipe: -r 30 -pix_fmt yuv420p video.webm".split(), stdin=subprocess.PIPE)
         return self
 
@@ -31,7 +30,7 @@ class FfmpegBase(Base, Virtual):
 
         outbuf = np.rot90(self.buf, self.rotation + self.orientation, axes=(0, 1))
 
-        imbuf = np.repeat(np.repeat(outbuf, self.__scale, axis=0), self.__scale, axis=1)
+        imbuf = np.repeat(np.repeat(outbuf, self.__scale, axis=0), self.scale, axis=1)
         for i in range(0, self.width):
             imbuf[:,i*self.__scale,:] = 0
         for i in range(0, self.height):

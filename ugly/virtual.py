@@ -13,6 +13,12 @@ def Emulator(width, height, channels, depth, driver=None):
     """
     Return an emulated device, optionally choosing driver automatically.
     """
+    if driver == 'sdl' or driver == 'auto' or driver == 'autoemu':
+        try:
+            from ugly.drivers.sdl import SDL
+            return SDL(width, height, channels, depth)
+        except ImportError:
+            pass
     if driver == 'terminal' or driver == 'auto' or driver == 'autoemu':
         try:
             from ugly.drivers.terminal import Terminal
@@ -34,6 +40,12 @@ def Monitor(device, driver=None):
     """
     Return another device in a debug monitor.
     """
+    if driver == 'sdl' or driver == 'auto':
+        try:
+            from ugly.drivers.sdl import SDLMonitor
+            return SDLMonitor(device)
+        except ImportError:
+            pass
     if driver == 'terminal' or driver == 'auto':
         try:
             from ugly.drivers.terminal import TerminalMonitor
