@@ -39,7 +39,7 @@ class FfmpegBase(Base, Virtual):
         imbuf = np.pad(imbuf, ((0,1), (0,1), (0,1)), mode='wrap')
         Image.fromarray(imbuf).save(self.__ffmpeg.stdin, format='png')
 
-    def __exit__(self, t, value, traceback):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.__ffmpeg.stdin.close()
         self.__ffmpeg.wait()
 

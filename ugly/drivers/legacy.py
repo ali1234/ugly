@@ -32,5 +32,5 @@ class Legacy(Base):
     def show(self):
         self.__legacy.show()
 
-    def __exit__(self, t, value, traceback):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.__legacy.off()

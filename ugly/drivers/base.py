@@ -107,6 +107,6 @@ class Monitor(Base):
         super().show()
         self.__device.show()
 
-    def __exit__(self, t, value, traceback):
-        super().__exit__(t, value, traceback)
-        self.__device.__exit__(t, value, traceback)
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        super().__exit__(exc_type, exc_val, exc_tb)
+        self.__device.__exit__(exc_type, exc_val, exc_tb)

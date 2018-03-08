@@ -47,7 +47,7 @@ class TerminalBase(Base, Virtual):
             sys.stdout.write(s)
         sys.stdout.flush()
 
-    def __exit__(self, t, value, traceback):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stdout.write('\033[0m\033[{};0H\033[?25h'.format(self.height+3))
 
 
