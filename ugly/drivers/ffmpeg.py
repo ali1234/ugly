@@ -29,7 +29,7 @@ class FfmpegBase(Base, Virtual):
 
     def show(self):
 
-        outbuf = np.rot90(self.buf, self.rotation + self.physical_rotation, axes=(0, 1))
+        outbuf = np.rot90(self.buf, self.rotation + self.orientation, axes=(0, 1))
 
         imbuf = np.repeat(np.repeat(outbuf, self.__scale, axis=0), self.__scale, axis=1)
         for i in range(0, self.width):

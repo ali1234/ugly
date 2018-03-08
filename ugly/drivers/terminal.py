@@ -36,7 +36,7 @@ class TerminalBase(Base, Virtual):
         else:
             outbuf = self.buf
 
-        outbuf = np.rot90(outbuf, self.rotation+self.physical_rotation, axes=(0, 1))
+        outbuf = np.rot90(outbuf, self.rotation + self.orientation, axes=(0, 1))
 
         for n, row in enumerate(outbuf):
             sys.stdout.write('\033[{};0H'.format(n+2))

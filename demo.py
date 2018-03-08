@@ -380,7 +380,7 @@ def main():
         display.rotation = 2
 
         if isinstance(display, Virtual):
-            display.physical_rotation = 2
+            display.orientation = 2
 
         now = time.monotonic()
 

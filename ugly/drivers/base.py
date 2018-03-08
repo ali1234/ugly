@@ -61,19 +61,26 @@ class Base(object):
 class Virtual(object):
     """
     Base for virtual drivers which are not backed by physical hardware.
-    Provides emulation of physical properties, like rotation.
+    Provides emulation of physical properties, like orientation.
     """
 
     def __init__(self):
-        self.__physical_rotation = 0
+        self.__orientation = 0
 
     @property
-    def physical_rotation(self):
-        return self.__physical_rotation
+    def orientation(self):
+        return self.__orientation
 
-    @physical_rotation.setter
-    def physical_rotation(self, rotation: int):
-        self.__physical_rotation = rotation % 4
+    @orientation.setter
+    def orientation(self, orientation: int):
+        self.__orientation = orientation % 4
+        self.orientation_changed()
+
+    def orientation_changed(self):
+        """
+        Override this if you need to forward rotation events some place.
+        """
+        pass
 
 
 class Framebuffer(Base):
