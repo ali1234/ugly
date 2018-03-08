@@ -9,7 +9,7 @@
 # * GNU General Public License for more details.
 
 
-def Emulator(width, height, channels, depth, driver=None):
+def Emulator(width, height, channels, depth, driver='auto'):
     """
     Return an emulated device, optionally choosing driver automatically.
     """

@@ -101,8 +101,12 @@ class Roni(Effect):
                                    240,  31, 253, 127, 255, 255], dtype=np.uint8)).reshape(16, 16) > 0
 
     def __call__(self, t):
-        if self.width == 16 and self.height == 16:
-            return self.roni
+        if self.width >= 16 and self.height >= 16:
+            dx = self.width - 16
+            dy = self.height - 16
+            padx = (dx // 2,dx - (dx // 2))
+            pady = (dy // 2,dy - (dy // 2))
+            return np.pad(self.roni, (pady, padx), mode='edge')
         else:
             return np.array([[True]], dtype=np.bool)
 

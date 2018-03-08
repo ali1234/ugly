@@ -12,6 +12,7 @@
 import sys
 
 import numpy as np
+import sdl2
 import sdl2.ext
 
 from ugly.drivers.base import Base, Monitor, Framebuffer, Virtual
@@ -28,9 +29,22 @@ class SDLBase(Base, Virtual):
     """
 
     def __enter__(self):
-        self.window = sdl2.ext.Window(str(type(self)), size=((self.width*self.scale)+1, (self.height*self.scale)+1))
+        self.window = sdl2.ext.Window(str(type(self)), size=self._window_size())
         self.window.show()
         return self
+
+    def _window_size(self):
+        if (self.orientation - self.rotation) & 1:
+            return ((self.height * self.scale) + 1, (self.width * self.scale) + 1)
+        else:
+            return ((self.width * self.scale) + 1, (self.height * self.scale) + 1)
+
+
+    def orientation_changed(self):
+        sdl2.SDL_SetWindowSize(self.window.window, *self._window_size())
+
+    def scale_changed(self):
+        sdl2.SDL_SetWindowSize(self.window.window, *self._window_size())
 
     def show(self):
         r = 0
@@ -41,13 +55,13 @@ class SDLBase(Base, Virtual):
         else:
             outbuf = self.buf
 
-        outbuf = np.rot90(outbuf, self.rotation + self.orientation, axes=(0, 1))
+        outbuf = np.rot90(outbuf, self.orientation - self.rotation, axes=(0, 1))
 
         imbuf = np.repeat(np.repeat(outbuf, self.scale, axis=0), self.scale, axis=1)
-        for i in range(0, self.width):
-            imbuf[:,i*self.scale,:] = 0
-        for i in range(0, self.height):
-            imbuf[i*self.scale,:,:] = 0
+        for i in range(0, imbuf.shape[0], self.scale):
+            imbuf[i,:,:] = 0
+        for i in range(0, imbuf.shape[1], self.scale):
+            imbuf[:,i,:] = 0
         imbuf = np.pad(imbuf, ((0,1), (0,1), (0,1)), mode='wrap')
 
         s = sdl2.ext.pixels3d(self.window.get_surface())

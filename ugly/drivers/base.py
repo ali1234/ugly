@@ -18,25 +18,25 @@ class Base(object):
 
     def __init__(self, buf: np.ndarray, depth: int):
         super().__init__()
-        self.__buf = buf
+        self._buf = buf
         self.__depth = depth
         self.__rotation = 0
 
     @property
     def buf(self):
-        return self.__buf
+        return self._buf
 
     @property
     def width(self):
-        return self.__buf.shape[1]
+        return self._buf.shape[1]
 
     @property
     def height(self):
-        return self.__buf.shape[0]
+        return self._buf.shape[0]
 
     @property
     def channels(self):
-        return self.__buf.shape[2]
+        return self._buf.shape[2]
 
     @property
     def depth(self):
@@ -87,6 +87,14 @@ class Virtual(object):
     def scale(self):
         return self.__scale
 
+    @scale.setter
+    def scale(self, scale: int):
+        self.__scale = scale
+        self.scale_changed()
+
+    def scale_changed(self):
+        pass
+
 
 class Framebuffer(Base):
     """
@@ -95,6 +103,11 @@ class Framebuffer(Base):
 
     def __init__(self, width: int, height: int, channels: int, depth: int):
         super().__init__(np.zeros((height, width, channels), dtype=np.uint8), depth)
+        self.__previous_rotation = 0
+
+    def rotation_changed(self):
+        self._buf = np.rot90(self._buf, self.rotation - self.__previous_rotation, axes=(0, 1))
+        self.__previous_rotation = self.rotation
 
 
 class Monitor(Base):
