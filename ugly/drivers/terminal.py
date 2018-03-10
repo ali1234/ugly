@@ -14,10 +14,10 @@ import sys
 import numpy as np
 
 from ugly.buffer import Drawable
-from ugly.drivers.base import Driver, Virtual
+from ugly.drivers.base import Virtual
 
 
-class TerminalMonitor(Driver, Virtual):
+class TerminalMonitor(Virtual):
     """
     Emulates a graphics device on the terminal.
     """

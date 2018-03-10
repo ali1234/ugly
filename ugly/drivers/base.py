@@ -54,14 +54,14 @@ class Driver(Buffer):
 
 
 
-class Virtual(object):
+class Virtual(Driver):
     """
     Base for virtual devices which are not backed by physical hardware.
     Provides emulation of physical properties.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, rawbuf: np.ndarray, depth: int, name = None):
+        super().__init__(rawbuf, depth, name)
         self.__orientation = 0
         self.__scale = 16
 

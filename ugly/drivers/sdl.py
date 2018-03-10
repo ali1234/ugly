@@ -14,13 +14,13 @@ import sdl2
 import sdl2.ext
 
 from ugly.buffer import Drawable
-from ugly.drivers.base import Driver, Virtual
+from ugly.drivers.base import Virtual
 
 
 sdl2.ext.init()
 #sdl2.ext.Window.DEFAULTFLAGS = sdl2.SDL_WINDOW_SHOWN | sdl2.SDL_WINDOW_UTILITY
 
-class SDLMonitor(Driver, Virtual):
+class SDLMonitor(Virtual):
     """
     Emulates a graphics device on the terminal.
     """

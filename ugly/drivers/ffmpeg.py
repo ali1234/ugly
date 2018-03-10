@@ -13,10 +13,10 @@ import numpy as np
 from PIL import Image
 
 from ugly.buffer import Drawable
-from ugly.drivers.base import Driver, Virtual
+from ugly.drivers.base import Virtual
 
 
-class FfmpegMonitor(Driver, Virtual):
+class FfmpegMonitor(Virtual):
     """
     Records output to a video file.
     """
