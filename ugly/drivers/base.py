@@ -127,15 +127,11 @@ class Monitor(Base):
     def __init__(self, device):
         super().__init__(device.buffer, device.depth)
         self.__device = device
-        self.__rotation = self.__device.rotation
 
     def __enter__(self):
         self.__device.__enter__()
         super().__enter__()
         return self
-
-    def rotation_changed(self):
-        self.__device.rotation = self.__rotation
 
     def show(self):
         super().show()

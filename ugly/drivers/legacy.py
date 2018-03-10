@@ -26,9 +26,6 @@ class Legacy(Base):
     def __enter__(self):
         return self
 
-    def rotation_changed(self):
-        self.__legacy.rotation(self.rotation*90)
-
     def show(self):
         self.__legacy.show()
 
