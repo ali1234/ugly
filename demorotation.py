@@ -55,6 +55,9 @@ def main():
                 display.rotation = rotori & 3
                 if isinstance(display, Virtual):
                     display.orientation = (rotori >> 2) & 3
+                display.flip_horizontal = (rotori >> 4) & 1
+                display.flip_vertical = (rotori >> 5) & 1
+
 
         except KeyboardInterrupt:
             pass
