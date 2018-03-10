@@ -25,7 +25,10 @@ def main():
 
     with Display(device=args.device, driver=args.driver) as display:
         monitor = display.connect_monitor(args.monitor)
-        
+
+        if isinstance(monitor, Virtual):
+            monitor.orientation = args.orientation
+
         display.scale = 8
 
         now = time.monotonic()
