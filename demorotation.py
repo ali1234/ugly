@@ -24,7 +24,8 @@ def main():
     args = Args()
 
     with Display(device=args.device, driver=args.driver) as display:
-
+        monitor = display.connect_monitor(args.monitor)
+        
         display.scale = 8
 
         now = time.monotonic()
