@@ -21,9 +21,9 @@ class Legacy(Driver, Drawable):
     # TODO: may need multiple versions of this
     # as the legacy drivers are all slightly different.
 
-    def __init__(self, legacy, depth):
-        self.__legacy = import_module(legacy)
-        super().__init__(self.__legacy._buf, depth, legacy)
+    def __init__(self, legacy, rawbuf, depth, name=None):
+        self.__legacy = legacy
+        super().__init__(rawbuf, depth, name=name)
 
     def __enter__(self):
         return super().__enter__()

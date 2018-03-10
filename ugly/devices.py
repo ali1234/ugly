@@ -29,7 +29,8 @@ def GetDevices():
 def unicornhathd(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return Legacy('unicornhathd', 8)
+            import unicornhathd
+            return Legacy(unicornhathd, unicornhathd._buf, 8, 'UnicornHatHD')
         except ImportError:
             pass
     return Emulator(16, 16, 3, 8, driver=driver, name='UnicornHatHD')
@@ -38,7 +39,8 @@ def unicornhathd(driver='auto'):
 def unicornhat(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return Legacy('unicornhat', 8)
+            import unicornhat
+            return Legacy(unicornhat, unicornhat._buf, 8, 'UnicornHat')
         except ImportError:
             pass
     return Emulator(8, 8, 3, 8, driver=driver, name='UnicornHat')
@@ -47,7 +49,8 @@ def unicornhat(driver='auto'):
 def unicornphat(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return Legacy('unicornhat', 8)
+            import unicornhat
+            return Legacy(unicornhat, unicornhat._buf[:4,:,:], 8, 'UnicornPhat')
         except ImportError:
             pass
     return Emulator(8, 4, 3, 8, driver=driver, name='UnicornPhat')
@@ -56,7 +59,8 @@ def unicornphat(driver='auto'):
 def scrollphathd(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return Legacy('scrollphathd', 8)
+            import scrollphathd
+            return Legacy(scrollphathd, scrollphathd.buffer, 8, 'ScrollPhatHD')
         except ImportError:
             pass
     return Emulator(17, 7, 1, 8, driver=driver, name='ScrollPhatHD')
@@ -65,7 +69,8 @@ def scrollphathd(driver='auto'):
 def scrollphat(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return Legacy('scrollphat', 1)
+            import scrollphat
+            return Legacy(scrollphat, scrollphat.buffer, 1, 'ScrollPhat')
         except ImportError:
             pass
     return Emulator(11, 5, 1, 1, driver=driver, name='ScrollPhat')
@@ -74,7 +79,8 @@ def scrollphat(driver='auto'):
 def blinkt(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return Legacy('blinkt', 8)
+            import blinkt
+            return Legacy(blinkt, blinkt._buf, 8, 'Blinkt')
         except ImportError:
             pass
     return Emulator(8, 1, 3, 8, driver=driver, name='Blinkt')
