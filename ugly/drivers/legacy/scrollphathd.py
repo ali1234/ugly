@@ -19,10 +19,7 @@ import scrollphathd
 class ScrollPhatHD(Driver, Drawable):
     """
     Legacy driver. Passes through calls to some other driver.
-    Does not need its own framebuffer as the legacy driver has one.
     """
-    # TODO: may need multiple versions of this
-    # as the legacy drivers are all slightly different.
 
     def __init__(self):
         super().__init__(np.zeros((7, 17, 1), dtype=np.uint8), 8, name='ScrollPhatHD')

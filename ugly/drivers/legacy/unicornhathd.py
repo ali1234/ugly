@@ -17,10 +17,7 @@ import unicornhathd
 class UnicornHatHD(Driver, Drawable):
     """
     Legacy driver. Passes through calls to some other driver.
-    Does not need its own framebuffer as the legacy driver has one.
     """
-    # TODO: may need multiple versions of this
-    # as the legacy drivers are all slightly different.
 
     def __init__(self):
         super().__init__(unicornhathd._buf, 8, name='UnicornHatHD')
