@@ -27,11 +27,13 @@ class Drawable(Buffer):
     def __init__(self, rawbuf: np.ndarray, depth: int):
         super().__init__(rawbuf, depth)
         self.__rotation = 0
+        self.__flip_h = 1
+        self.__flip_v = 1
 
     @property
     def buffer(self):
         """A rotated view into _buf with [y, x] ordering."""
-        return np.rot90(self.rawbuf, self.rotation)
+        return np.rot90(self.rawbuf, self.rotation)[::self.__flip_v,::self.__flip_h,:]
 
     @property
     def pixels(self):
@@ -53,3 +55,19 @@ class Drawable(Buffer):
     @rotation.setter
     def rotation(self, rotation: int):
         self.__rotation = rotation % 4
+
+    @property
+    def flip_horizontal(self):
+        return self.__flip_h == -1
+
+    @flip_horizontal.setter
+    def flip_horizontal(self, flip):
+        self.__flip_h = -1 if flip else 1
+
+    @property
+    def flip_vertical(self):
+        return self.__flip_v == -1
+
+    @flip_vertical.setter
+    def flip_vertical(self, flip):
+        self.__flip_v = -1 if flip else 1
