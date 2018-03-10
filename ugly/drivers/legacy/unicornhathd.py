@@ -8,12 +8,13 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
-from importlib import import_module
-
 from ugly.buffer import Drawable
 from ugly.drivers.base import Driver
 
-class Legacy(Driver, Drawable):
+import unicornhathd
+
+
+class UnicornHatHD(Driver, Drawable):
     """
     Legacy driver. Passes through calls to some other driver.
     Does not need its own framebuffer as the legacy driver has one.
@@ -21,17 +22,16 @@ class Legacy(Driver, Drawable):
     # TODO: may need multiple versions of this
     # as the legacy drivers are all slightly different.
 
-    def __init__(self, legacy, rawbuf, depth, name=None):
-        self.__legacy = legacy
-        super().__init__(rawbuf, depth, name=name)
+    def __init__(self):
+        super().__init__(unicornhathd._buf, 8, name='UnicornHatHD')
 
     def __enter__(self):
         return super().__enter__()
 
     def show(self):
-        self.__legacy.show()
+        unicornhathd.show()
         super().show()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.__legacy.off()
+        unicornhathd.off()
         super().__exit__(exc_type, exc_val, exc_tb)

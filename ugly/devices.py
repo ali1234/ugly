@@ -8,10 +8,7 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
-from importlib import import_module
-
-from ugly.drivers.legacy import Legacy
-from ugly.virtual import Emulator, Monitor
+from ugly.virtual import Emulator
 
 devices = {}
 def device(f):
@@ -27,16 +24,18 @@ def GetDevices():
 
 @device
 def unicornhathd(driver='auto'):
+    # tested working
     if driver == 'legacy' or driver == 'auto':
         try:
-            import unicornhathd
-            return Legacy(unicornhathd, unicornhathd._buf, 8, 'UnicornHatHD')
+            from ugly.drivers.legacy.unicornhathd import UnicornHatHD
+            return UnicornHatHD()
         except ImportError:
             pass
     return Emulator(16, 16, 3, 8, driver=driver, name='UnicornHatHD')
 
 @device
 def unicornhat(driver='auto'):
+    # broken - no numpy driver
     if driver == 'legacy' or driver == 'auto':
         try:
             import unicornhat
@@ -47,6 +46,7 @@ def unicornhat(driver='auto'):
 
 @device
 def unicornphat(driver='auto'):
+    # broken - no numpy driver
     if driver == 'legacy' or driver == 'auto':
         try:
             import unicornhat
@@ -59,14 +59,15 @@ def unicornphat(driver='auto'):
 def scrollphathd(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            import scrollphathd
-            return Legacy(scrollphathd, scrollphathd.buffer, 8, 'ScrollPhatHD')
+            from ugly.drivers.legacy.scrollphathd import ScrollPhatHD
+            return ScrollPhatHD()
         except ImportError:
             pass
     return Emulator(17, 7, 1, 8, driver=driver, name='ScrollPhatHD')
 
 @device
 def scrollphat(driver='auto'):
+    # broken - no numpy driver
     if driver == 'legacy' or driver == 'auto':
         try:
             import scrollphat
@@ -77,6 +78,7 @@ def scrollphat(driver='auto'):
 
 @device
 def blinkt(driver='auto'):
+    # broken - no numpy driver
     if driver == 'legacy' or driver == 'auto':
         try:
             import blinkt
