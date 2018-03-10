@@ -33,6 +33,8 @@ def main():
             monitor.orientation = args.orientation
 
         display.rotation = args.rotation
+        display.flip_horizontal = args.flip_h
+        display.flip_vertical = args.flip_v
 
         effect_time = 10  # seconds
         effects_count = 0

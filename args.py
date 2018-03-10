@@ -33,6 +33,14 @@ def Args():
                         help="""
                         Orientation for virtual display, if using one.
                         """)
+    parser.add_argument('--flip-h', action='store_true',
+                        help="""
+                        Horizontally flip the logical display.
+                        """)
+    parser.add_argument('--flip-v', action='store_true',
+                        help="""
+                        Vertically flip the logical display.
+                        """)
 
     args = parser.parse_args()
 
