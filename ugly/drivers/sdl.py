@@ -34,11 +34,12 @@ class SDLBase(Base, Virtual):
         return self
 
     def _window_size(self):
-        if (self.orientation - self.rotation) & 1:
-            return ((self.height * self.scale) + 1, (self.width * self.scale) + 1)
+        h = (self.rawbuf.shape[0] * self.scale) + 1
+        w = (self.rawbuf.shape[1] * self.scale) + 1
+        if self.orientation & 1:
+            return (h, w)
         else:
-            return ((self.width * self.scale) + 1, (self.height * self.scale) + 1)
-
+            return (w, h)
 
     def orientation_changed(self):
         sdl2.SDL_SetWindowSize(self.window.window, *self._window_size())
@@ -51,11 +52,11 @@ class SDLBase(Base, Virtual):
         g = 1%self.channels
         b = 2%self.channels
         if self.depth == 1:
-            outbuf = ((self.buf & self.depth)>0) * 255
+            outbuf = ((self.rawbuf & self.depth) > 0) * 255
         else:
-            outbuf = self.buf
+            outbuf = self.rawbuf
 
-        outbuf = np.rot90(outbuf, self.orientation - self.rotation, axes=(0, 1))
+        outbuf = np.rot90(outbuf, self.orientation, axes=(0, 1))
 
         imbuf = np.repeat(np.repeat(outbuf, self.scale, axis=0), self.scale, axis=1)
         for i in range(0, imbuf.shape[0], self.scale):
@@ -64,10 +65,10 @@ class SDLBase(Base, Virtual):
             imbuf[:,i,:] = 0
         imbuf = np.pad(imbuf, ((0,1), (0,1), (0,1)), mode='wrap')
 
-        s = sdl2.ext.pixels3d(self.window.get_surface())
-        s[:,:,0] = np.swapaxes(imbuf, 0, 1)[:,:,r]
-        s[:,:,1] = np.swapaxes(imbuf, 0, 1)[:,:,g]
-        s[:,:,2] = np.swapaxes(imbuf, 0, 1)[:,:,b]
+        s = np.transpose(sdl2.ext.pixels3d(self.window.get_surface()), (1, 0, 2))
+        s[:,:,2] = imbuf[:,:,r]
+        s[:,:,1] = imbuf[:,:,g]
+        s[:,:,0] = imbuf[:,:,b]
         self.window.refresh()
 
     def __exit__(self, exc_type, exc_val, exc_tb):

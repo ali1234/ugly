@@ -10,40 +10,18 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
-from effects import random_effect, intro_effect
+import time
+import numpy as np
 
+from ugly.devices import Display
+from ugly.drivers.base import Virtual
+
+from effects import random_effect, intro_effect
+from args import Args
 
 def main():
 
-    import time, argparse
-
-    from ugly.devices import Display, GetDevices
-    from ugly.drivers.base import Virtual
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--device', type=str, default='UnicornHatHD',
-                        help="""
-                        Device type to control or emulate. One of: {}.
-                        """.format(', '.join(GetDevices())))
-    parser.add_argument('-D', '--driver', type=str, default='auto',
-                        help="""
-                        Driver for device. One of: legacy, terminal, ffmpeg.
-                        or auto to use any available driver, or autoemu for
-                        any available virtual driver.
-                        """)
-    parser.add_argument('-M', '--monitor', type=str, default=None,
-                        help="""
-                        Enable debug monitoring of the main device through
-                        this driver. One of: terminal, ffmpeg, or auto for
-                        any available virtual driver.
-                        """)
-    parser.add_argument('-F', '--fixed-timestep', action='store_true',
-                        help="""
-                        Use a fixed frame time step of 30 fps. Use when recording
-                        video.
-                        """)
-
-    args = parser.parse_args()
+    args = Args()
 
     with Display(device=args.device, driver=args.driver, monitor=args.monitor) as display:
 
@@ -55,10 +33,12 @@ def main():
             (random_effect(display.width, display.height), effect_time),
         ]
 
-        display.rotation = 2
+        print (args.rotation)
+
+        display.rotation = args.rotation
 
         if isinstance(display, Virtual):
-            display.orientation = 2
+            display.orientation = args.orientation
 
         now = time.monotonic()
 
@@ -74,15 +54,15 @@ def main():
                     if remaining < 0:
                         remaining = 0
                     if display.channels == 3:
-                        display.buf[:] = effects[0][0](now)
+                        display.buffer[:] = effects[0][0](now)
                         if remaining < 1:
-                            display.buf[:] = display.buf * remaining
-                            display.buf[:] = display.buf + (effects[1][0](now) * (1-remaining))
+                            display.buffer[:] = display.buffer * remaining
+                            display.buffer[:] = display.buffer + (effects[1][0](now) * (1-remaining))
                     elif display.channels == 1:
-                        display.buf[:,:,0] = effects[0][0](now)[:,:,1]
+                        display.buffer[:,:,0] = effects[0][0](now)[:,:,1]
                         if remaining < 1:
-                            display.buf[:,:,0] = display.buf[:,:,0] * remaining
-                            display.buf[:,:,0] = display.buf[:,:,0] + (effects[1][0](now)[:,:,1] * (1-remaining))
+                            display.buffer[:,:,0] = display.buffer[:,:,0] * remaining
+                            display.buffer[:,:,0] = display.buffer[:,:,0] + (effects[1][0](now)[:,:,1] * (1-remaining))
 
                     display.show()
                     if remaining == 0:
@@ -90,7 +70,7 @@ def main():
 
                     time.sleep(0.001)
 
-                effect = effects.pop(0)
+                effects.pop(0)
                 effects.append((random_effect(display.width, display.height), effect_time))
                 effects_count += 1
                 if effects_limit is not None and effects_count >= effects_limit:

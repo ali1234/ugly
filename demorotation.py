@@ -10,16 +10,20 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
+import time
+import numpy as np
+
+from ugly.devices import Display
+from ugly.drivers.base import Virtual
+
 from effects import random_effect, intro_effect
+from args import Args
 
 def main():
 
-    import time, argparse
+    args = Args()
 
-    from ugly.virtual import Emulator
-    from ugly.drivers.base import Virtual
-
-    with Emulator(32, 16, 3, 8) as display:
+    with Display(device=args.device, driver=args.driver, monitor=args.monitor) as display:
 
         display.scale = 8
 
@@ -32,13 +36,25 @@ def main():
                 start = now
                 while now - start < 1.0:
                     now = time.monotonic()
-                    display.buf[:] = intro_effect(display.width, display.height)(now)
+
+                    if display.channels == 3:
+                        display.buffer[:] = intro_effect(display.width, display.height)(now) * 0.75
+
+                        display.pixels[0:2, 0:2] = np.array((0xff, 0, 0))
+                        display.pixels[2:6, 0] = np.array((0, 0xff, 0))
+                        display.pixels[2:6, 1] = np.array((0, 0, 0))
+                        display.pixels[0, 2:8] = np.array((0, 0, 0xff))
+                        display.pixels[1, 2:8] = np.array((0, 0, 0))
+
+                    elif display.channels == 1:
+                        display.buffer[:,:,0] = (intro_effect(display.width, display.height)(now) * 0.75)[:,:,1]
 
                     display.show()
                     time.sleep(0.01)
                 rotori += 1
                 display.rotation = rotori & 3
-                display.orientation = (rotori >> 2) & 3
+                if isinstance(display, Virtual):
+                    display.orientation = (rotori >> 2) & 3
 
         except KeyboardInterrupt:
             pass

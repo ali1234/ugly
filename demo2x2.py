@@ -15,9 +15,9 @@ from effects import random_effect, intro_effect
 
 def main():
 
-    import time, argparse
+    import time
 
-    from ugly.devices import Display, GetDevices
+    from ugly.devices import Display
     from ugly.drivers.base import Virtual
 
     with Display(device='UnicornHatHD', driver='sdl', monitor=None) as display:
@@ -50,20 +50,20 @@ def main():
                                     if remaining < 0:
                                         remaining = 0
                                     if display.channels == 3:
-                                        display.buf[:] = effects[0][0](now)
+                                        display.buffer[:] = effects[0][0](now)
                                         if remaining < 1:
-                                            display.buf[:] = display.buf * remaining
-                                            display.buf[:] = display.buf + (effects[1][0](now) * (1-remaining))
+                                            display.buffer[:] = display.buffer * remaining
+                                            display.buffer[:] = display.buffer + (effects[1][0](now) * (1-remaining))
                                     elif display.channels == 1:
-                                        display.buf[:,:,0] = effects[0][0](now)[:,:,1]
+                                        display.buffer[:,:,0] = effects[0][0](now)[:,:,1]
                                         if remaining < 1:
-                                            display.buf[:,:,0] = display.buf[:,:,0] * remaining
-                                            display.buf[:,:,0] = display.buf[:,:,0] + (effects[1][0](now)[:,:,1] * (1-remaining))
+                                            display.buffer[:,:,0] = display.buffer[:,:,0] * remaining
+                                            display.buffer[:,:,0] = display.buffer[:,:,0] + (effects[1][0](now)[:,:,1] * (1-remaining))
 
-                                    dtl.buf[:] = display.buf[0:8,0:8,:]
-                                    dtr.buf[:] = display.buf[0:8,8:16,:]
-                                    dbl.buf[:] = display.buf[8:16,0:8,:]
-                                    dbr.buf[:] = display.buf[8:16,8:16,:]
+                                    dtl.buffer[:] = display.buffer[0:8, 0:8, :]
+                                    dtr.buffer[:] = display.buffer[0:8, 8:16, :]
+                                    dbl.buffer[:] = display.buffer[8:16, 0:8, :]
+                                    dbr.buffer[:] = display.buffer[8:16, 8:16, :]
 
                                     display.show()
                                     dtl.show()
@@ -76,7 +76,7 @@ def main():
 
                                     time.sleep(0.001)
 
-                                effect = effects.pop(0)
+                                effects.pop(0)
                                 effects.append((random_effect(display.width, display.height), effect_time))
                                 effects_count += 1
                                 if effects_limit is not None and effects_count >= effects_limit:

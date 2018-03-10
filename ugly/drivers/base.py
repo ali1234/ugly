@@ -18,25 +18,36 @@ class Base(object):
 
     def __init__(self, buf: np.ndarray, depth: int):
         super().__init__()
-        self._buf = buf
+        self.__buf = buf
         self.__depth = depth
         self.__rotation = 0
 
     @property
-    def buf(self):
-        return self._buf
+    def rawbuf(self):
+        """A raw, unrotated view into _buf with [y, x] ordering."""
+        return self.__buf
+
+    @property
+    def buffer(self):
+        """A rotated view into _buf with [y, x] ordering."""
+        return np.rot90(self.__buf, self.rotation)
+
+    @property
+    def pixels(self):
+        """A rotated view into _buf with [x, y] ordering."""
+        return np.transpose(self.buffer, (1, 0, 2))
 
     @property
     def width(self):
-        return self._buf.shape[1]
+        return self.buffer.shape[1]
 
     @property
     def height(self):
-        return self._buf.shape[0]
+        return self.buffer.shape[0]
 
     @property
     def channels(self):
-        return self._buf.shape[2]
+        return self.__buf.shape[2]
 
     @property
     def depth(self):
@@ -74,8 +85,10 @@ class Virtual(object):
 
     @orientation.setter
     def orientation(self, orientation: int):
-        self.__orientation = orientation % 4
-        self.orientation_changed()
+        t = orientation % 4
+        if self.__orientation != t:
+            self.__orientation = t
+            self.orientation_changed()
 
     def orientation_changed(self):
         """
@@ -89,8 +102,9 @@ class Virtual(object):
 
     @scale.setter
     def scale(self, scale: int):
-        self.__scale = scale
-        self.scale_changed()
+        if scale != self.__scale:
+            self.__scale = scale
+            self.scale_changed()
 
     def scale_changed(self):
         pass
@@ -103,11 +117,6 @@ class Framebuffer(Base):
 
     def __init__(self, width: int, height: int, channels: int, depth: int):
         super().__init__(np.zeros((height, width, channels), dtype=np.uint8), depth)
-        self.__previous_rotation = 0
-
-    def rotation_changed(self):
-        self._buf = np.rot90(self._buf, self.rotation - self.__previous_rotation, axes=(0, 1))
-        self.__previous_rotation = self.rotation
 
 
 class Monitor(Base):
@@ -116,7 +125,7 @@ class Monitor(Base):
     """
 
     def __init__(self, device):
-        super().__init__(device.buf, device.depth)
+        super().__init__(device.buffer, device.depth)
         self.__device = device
         self.__rotation = self.__device.rotation
 

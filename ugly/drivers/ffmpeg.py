@@ -28,13 +28,13 @@ class FfmpegBase(Base, Virtual):
 
     def show(self):
 
-        outbuf = np.rot90(self.buf, self.rotation + self.orientation, axes=(0, 1))
+        outbuf = np.rot90(self.buffer, self.orientation, axes=(0, 1))
 
-        imbuf = np.repeat(np.repeat(outbuf, self.__scale, axis=0), self.scale, axis=1)
+        imbuf = np.repeat(np.repeat(outbuf, self.scale, axis=0), self.scale, axis=1)
         for i in range(0, self.width):
-            imbuf[:,i*self.__scale,:] = 0
+            imbuf[:,i*self.scale,:] = 0
         for i in range(0, self.height):
-            imbuf[i*self.__scale,:,:] = 0
+            imbuf[i*self.scale,:,:] = 0
         imbuf = np.pad(imbuf, ((0,1), (0,1), (0,1)), mode='wrap')
         Image.fromarray(imbuf).save(self.__ffmpeg.stdin, format='png')
 
