@@ -65,6 +65,17 @@ class Virtual(Driver):
         self.__orientation = 0
         self.__scale = 16
 
+    def convert_buffer(self):
+        """
+        Helper to convert buffer for display.
+        """
+        if self.depth == 1:
+            outbuf = ((self.rawbuf & 0x80) > 0) * 255
+        else:
+            outbuf = self.rawbuf
+
+        return np.rot90(outbuf, self.orientation, axes=(0, 1))
+
     @property
     def orientation(self):
         return self.__orientation

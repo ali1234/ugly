@@ -27,7 +27,7 @@ class FfmpegMonitor(Virtual):
 
     def show(self):
 
-        outbuf = np.rot90(self.rawbuf, self.orientation, axes=(0, 1))
+        outbuf = self.convert_buffer()
 
         imbuf = np.repeat(np.repeat(outbuf, self.scale, axis=0), self.scale, axis=1)
         for i in range(0, self.rawbuf.shape[1]):

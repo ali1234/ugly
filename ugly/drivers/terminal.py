@@ -30,12 +30,8 @@ class TerminalMonitor(Virtual):
         r = 0
         g = 1%self.channels
         b = 2%self.channels
-        if self.depth == 1:
-            outbuf = ((self.rawbuf & self.depth) > 0) * 255
-        else:
-            outbuf = self.rawbuf
 
-        outbuf = np.rot90(outbuf, self.orientation, axes=(0, 1))
+        outbuf = self.convert_buffer()
 
         for n, row in enumerate(outbuf):
             sys.stdout.write('\033[{};0H'.format(n+2))

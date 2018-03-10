@@ -48,12 +48,8 @@ class SDLMonitor(Virtual):
         r = 0
         g = 1%self.channels
         b = 2%self.channels
-        if self.depth == 1:
-            outbuf = ((self.rawbuf & self.depth) > 0) * 255
-        else:
-            outbuf = self.rawbuf
 
-        outbuf = np.rot90(outbuf, self.orientation, axes=(0, 1))
+        outbuf = self.convert_buffer()
 
         imbuf = np.repeat(np.repeat(outbuf, self.scale, axis=0), self.scale, axis=1)
         for i in range(0, imbuf.shape[0], self.scale):
