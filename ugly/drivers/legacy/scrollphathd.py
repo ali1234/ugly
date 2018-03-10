@@ -31,7 +31,7 @@ class ScrollPhatHD(Driver, Drawable):
         return super().__enter__()
 
     def show(self):
-        scrollphathd.display.buf = self.rawbuf[:,:,0] / 255
+        scrollphathd.display.buf = np.transpose(self.rawbuf[:,:,0] / 255, (1, 0))
         scrollphathd.show()
         super().show()
 
