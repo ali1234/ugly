@@ -13,10 +13,10 @@ import numpy as np
 from ugly.buffer import Drawable
 from ugly.drivers.base import Driver
 
-import scrollphathd
+import scrollphat
 
 
-class ScrollPhatHD(Driver, Drawable):
+class ScrollPhat(Driver, Drawable):
     """
     Legacy driver. Passes through calls to some other driver.
     Does not need its own framebuffer as the legacy driver has one.
@@ -25,17 +25,17 @@ class ScrollPhatHD(Driver, Drawable):
     # as the legacy drivers are all slightly different.
 
     def __init__(self):
-        super().__init__(np.zeros((7, 17, 1), dtype=np.uint8), 8, name='ScrollPhatHD')
+        super().__init__(np.zeros((5, 11, 1), dtype=np.uint8), 1, name='ScrollPhat')
 
     def __enter__(self):
         return super().__enter__()
 
     def show(self):
-        scrollphathd.display.buf = np.transpose(self.rawbuf[:,:,0] / 255, (1, 0))
-        scrollphathd.show()
+        packed = np.packbits(np.pad( (self.rawbuf[::-1,:,0] & 0x80) > 0, ((3,0),(0,0)), mode='constant'), axis=0)
+        scrollphat.set_buffer(packed[0].tolist())
+        scrollphat.update()
         super().show()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        scrollphathd.clear()
-        scrollphathd.show()
+        scrollphat.clear()
         super().__exit__(exc_type, exc_val, exc_tb)

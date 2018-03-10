@@ -70,8 +70,8 @@ def scrollphat(driver='auto'):
     # broken - no numpy driver
     if driver == 'legacy' or driver == 'auto':
         try:
-            import scrollphat
-            return Legacy(scrollphat, scrollphat.buffer, 1, 'ScrollPhat')
+            from ugly.drivers.legacy.scrollphat import ScrollPhat
+            return ScrollPhat()
         except ImportError:
             pass
     return Emulator(11, 5, 1, 1, driver=driver, name='ScrollPhat')
