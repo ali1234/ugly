@@ -23,7 +23,7 @@ class Legacy(Driver, Drawable):
 
     def __init__(self, legacy, depth):
         self.__legacy = import_module(legacy)
-        super().__init__(legacy._buf, depth, legacy)
+        super().__init__(self.__legacy._buf, depth, legacy)
 
     def __enter__(self):
         return super().__enter__()
