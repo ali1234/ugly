@@ -23,7 +23,7 @@ def main():
 
     args = Args()
 
-    with Display(device=args.device, driver=args.driver, monitor=args.monitor) as display:
+    with Display(device=args.device, driver=args.driver) as display:
 
         display.scale = 8
 

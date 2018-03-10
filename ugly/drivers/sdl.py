@@ -9,29 +9,26 @@
 # * GNU General Public License for more details.
 
 
-import sys
-
 import numpy as np
 import sdl2
 import sdl2.ext
 
-from ugly.drivers.base import Base, Monitor, Framebuffer, Virtual
-
-__all__ = ['SDL', 'SDLMonitor']
+from ugly.buffer import Drawable
+from ugly.drivers.base import Driver, Virtual
 
 
 sdl2.ext.init()
+#sdl2.ext.Window.DEFAULTFLAGS = sdl2.SDL_WINDOW_SHOWN | sdl2.SDL_WINDOW_UTILITY
 
-
-class SDLBase(Base, Virtual):
+class SDLMonitor(Driver, Virtual):
     """
     Emulates a graphics device on the terminal.
     """
 
     def __enter__(self):
-        self.window = sdl2.ext.Window(str(type(self)), size=self._window_size())
+        self.window = sdl2.ext.Window(self.name, size=self._window_size())
         self.window.show()
-        return self
+        return super().__enter__()
 
     def _window_size(self):
         h = (self.rawbuf.shape[0] * self.scale) + 1
@@ -70,14 +67,12 @@ class SDLBase(Base, Virtual):
         s[:,:,1] = imbuf[:,:,g]
         s[:,:,0] = imbuf[:,:,b]
         self.window.refresh()
+        super().show()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        super().__exit__(exc_type, exc_val, exc_tb)
 
 
-class SDL(Framebuffer, SDLBase):
+class SDL(SDLMonitor, Drawable):
     pass
 
-
-class SDLMonitor(Monitor, SDLBase):
-    pass

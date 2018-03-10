@@ -13,14 +13,6 @@ from importlib import import_module
 from ugly.drivers.legacy import Legacy
 from ugly.virtual import Emulator, Monitor
 
-
-def legacy(modname, depth, wrapper=Legacy, monitor=None):
-    m = import_module(modname)
-    if monitor is None:
-        return wrapper(m)
-    else:
-        return Monitor(wrapper(m), driver=monitor)
-
 devices = {}
 def device(f):
     devices[f.__name__] = f
@@ -34,59 +26,58 @@ def GetDevices():
 # It can autoselect based on what modules are available!
 
 @device
-def UnicornHatHD(driver='auto', monitor=None):
+def unicornhathd(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return legacy('unicornhathd', 8, monitor=monitor)
+            return Legacy('unicornhathd', 8)
         except ImportError:
             pass
-    return Emulator(16, 16, 3, 8, driver=driver)
+    return Emulator(16, 16, 3, 8, driver=driver, name='UnicornHatHD')
 
 @device
-def UnicornHat(driver='auto', monitor=None):
+def unicornhat(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return legacy('unicornhat', 8, monitor=monitor)
+            return Legacy('unicornhat', 8)
         except ImportError:
             pass
-    return Emulator(8, 8, 3, 8, driver=driver)
+    return Emulator(8, 8, 3, 8, driver=driver, name='UnicornHat')
 
 @device
-def UnicornPhat(driver='auto', monitor=None):
+def unicornphat(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return legacy('unicornhat', 8, monitor=monitor)
+            return Legacy('unicornhat', 8)
         except ImportError:
             pass
-    return Emulator(8, 4, 3, 8, driver=driver)
+    return Emulator(8, 4, 3, 8, driver=driver, name='UnicornPhat')
 
 @device
-def ScrollPhatHD(driver='auto', monitor=None):
+def scrollphathd(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return legacy('scrollphathd', 8, monitor=monitor)
+            return Legacy('scrollphathd', 8)
         except ImportError:
             pass
-    return Emulator(17, 7, 1, 8, driver=driver)
+    return Emulator(17, 7, 1, 8, driver=driver, name='ScrollPhatHD')
 
 @device
-def ScrollPhat(driver='auto', monitor=None):
+def scrollphat(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            return legacy('scrollphat', 1, monitor=monitor)
+            return Legacy('scrollphat', 1)
         except ImportError:
             pass
-    return Emulator(11, 5, 1, 1, driver=driver)
+    return Emulator(11, 5, 1, 1, driver=driver, name='ScrollPhat')
 
 @device
-def Blinkt(driver='auto', monitor=None):
+def blinkt(driver='auto'):
     if driver == 'legacy' or driver == 'auto':
         try:
-            import blinkt
-            return legacy('blinkt', 8, monitor=monitor)
+            return Legacy('blinkt', 8)
         except ImportError:
             pass
-    return Emulator(8, 1, 3, 8, driver=driver)
+    return Emulator(8, 1, 3, 8, driver=driver, name='Blinkt')
 
-def Display(device, driver='auto', monitor=None):
-    return globals()[device](driver=driver, monitor=monitor)
+def Display(device, driver='auto'):
+    return globals()[device.lower()](driver=driver.lower())

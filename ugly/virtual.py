@@ -8,27 +8,32 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
+import numpy as np
 
-def Emulator(width, height, channels, depth, driver='auto'):
+def Emulator(width, height, channels, depth, driver='auto', name=None):
     """
     Return an emulated device, optionally choosing driver automatically.
     """
+    driver = driver.lower()
+
+    rawbuf = np.zeros((height, width, channels), dtype=np.uint8)
+
     if driver == 'sdl' or driver == 'auto' or driver == 'autoemu':
         try:
             from ugly.drivers.sdl import SDL
-            return SDL(width, height, channels, depth)
+            return SDL(rawbuf, depth, name=name)
         except ImportError:
             pass
     if driver == 'terminal' or driver == 'auto' or driver == 'autoemu':
         try:
             from ugly.drivers.terminal import Terminal
-            return Terminal(width, height, channels, depth)
+            return Terminal(rawbuf, depth, name=name)
         except ImportError:
             pass
     if driver == 'ffmpeg': # don't select this one automatically
         try:
             from ugly.drivers.ffmpeg import Ffmpeg
-            return Ffmpeg(width, height, channels, depth)
+            return Ffmpeg(rawbuf, depth, name=name)
         except ImportError:
             pass
     # If we got here, no emulation drivers were available.
@@ -36,26 +41,29 @@ def Emulator(width, height, channels, depth, driver='auto'):
     raise ImportError
 
 
-def Monitor(device, driver=None):
+def Monitor(device, driver="auto"):
     """
-    Return another device in a debug monitor.
+    Return a monitor device, optionally choosing driver automatically.
     """
+    driver = driver.lower()
+    name = 'Monitor of {}'.format(device.name)
+
     if driver == 'sdl' or driver == 'auto':
         try:
             from ugly.drivers.sdl import SDLMonitor
-            return SDLMonitor(device)
+            return SDLMonitor(device.rawbuf, device.depth, name=name)
         except ImportError:
             pass
     if driver == 'terminal' or driver == 'auto':
         try:
             from ugly.drivers.terminal import TerminalMonitor
-            return TerminalMonitor(device)
+            return TerminalMonitor(device.rawbuf, device.depth, name=name)
         except ImportError:
             pass
     if driver == 'ffmpeg': # don't select this one automatically
         try:
             from ugly.drivers.ffmpeg import FfmpegMonitor
-            return FfmpegMonitor(device)
+            return FfmpegMonitor(device.rawbuf, device.depth, name=name)
         except ImportError:
             pass
     # If we got here, no emulation drivers were available.

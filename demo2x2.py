@@ -20,11 +20,11 @@ def main():
     from ugly.devices import Display
     from ugly.drivers.base import Virtual
 
-    with Display(device='UnicornHatHD', driver='sdl', monitor=None) as display:
-        with Display(device='UnicornHat', driver='sdl', monitor=None) as dtl:
-            with Display(device='UnicornHat', driver='sdl', monitor=None) as dtr:
-                with Display(device='UnicornHat', driver='sdl', monitor=None) as dbl:
-                    with Display(device='UnicornHat', driver='sdl', monitor=None) as dbr:
+    with Display(device='UnicornHatHD', driver='sdl') as display:
+        with Display(device='UnicornHat', driver='sdl') as dtl:
+            with Display(device='UnicornHat', driver='sdl') as dtr:
+                with Display(device='UnicornHat', driver='sdl') as dbl:
+                    with Display(device='UnicornHat', driver='sdl') as dbr:
 
                         effect_time = 10  # seconds
                         effects_count = 0

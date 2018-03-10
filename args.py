@@ -4,7 +4,7 @@ from ugly.devices import GetDevices
 
 def Args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--device', type=str, default='UnicornHatHD',
+    parser.add_argument('-d', '--device', type=str, default='unicornhathd',
                         help="""
                         Device type to control or emulate. One of: {}.
                         """.format(', '.join(GetDevices())))

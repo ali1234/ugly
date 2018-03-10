@@ -10,72 +10,58 @@
 
 import numpy as np
 
+from ugly.buffer import Buffer
+from ugly.virtual import Monitor
 
-class Base(object):
+class Driver(Buffer):
     """
-    Base for all graphics drivers.
+    Base for devices.
     """
 
-    def __init__(self, buf: np.ndarray, depth: int):
-        super().__init__()
-        self.__buf = buf
-        self.__depth = depth
-        self.__rotation = 0
+    def __init__(self, rawbuf: np.ndarray, depth: int, name = None):
+        super().__init__(rawbuf, depth) # object or Virtual
+        self.__monitor = None
+        self.__name = name
 
     @property
-    def rawbuf(self):
-        """A raw, unrotated view into _buf with [y, x] ordering."""
-        return self.__buf
+    def name(self):
+        if self.__name is None:
+            return type(self).__name__
+        else:
+            return self.__name
 
-    @property
-    def buffer(self):
-        """A rotated view into _buf with [y, x] ordering."""
-        return np.rot90(self.__buf, self.rotation)
+    def __enter__(self):
+        return self
 
-    @property
-    def pixels(self):
-        """A rotated view into _buf with [x, y] ordering."""
-        return np.transpose(self.buffer, (1, 0, 2))
+    def disconnect_monitor(self):
+        if self.__monitor:
+            self.__monitor.__exit__(None, None, None)
+            self.__monitor = None
 
-    @property
-    def width(self):
-        return self.buffer.shape[1]
+    def connect_monitor(self, driver="any"):
+        if driver is None:
+            return None
+        self.disconnect_monitor()
+        self.__monitor = Monitor(self, driver).__enter__()
+        return self.__monitor
 
-    @property
-    def height(self):
-        return self.buffer.shape[0]
+    def show(self):
+        if self.__monitor:
+            self.__monitor.show()
 
-    @property
-    def channels(self):
-        return self.__buf.shape[2]
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.disconnect_monitor()
 
-    @property
-    def depth(self):
-        return self.__depth
-
-    @property
-    def rotation(self):
-        return self.__rotation
-
-    @rotation.setter
-    def rotation(self, rotation: int):
-        self.__rotation = rotation % 4
-        self.rotation_changed()
-
-    def rotation_changed(self):
-        """
-        Override this if you need to forward rotation events some place.
-        """
-        pass
 
 
 class Virtual(object):
     """
-    Base for virtual drivers which are not backed by physical hardware.
-    Provides emulation of physical properties, like orientation.
+    Base for virtual devices which are not backed by physical hardware.
+    Provides emulation of physical properties.
     """
 
     def __init__(self):
+        super().__init__()
         self.__orientation = 0
         self.__scale = 16
 
@@ -108,35 +94,3 @@ class Virtual(object):
 
     def scale_changed(self):
         pass
-
-
-class Framebuffer(Base):
-    """
-    Base for drivers which must manage their own internal framebuffer.
-    """
-
-    def __init__(self, width: int, height: int, channels: int, depth: int):
-        super().__init__(np.zeros((height, width, channels), dtype=np.uint8), depth)
-
-
-class Monitor(Base):
-    """
-    Base for a virtual device which monitors (mirrors) another device.
-    """
-
-    def __init__(self, device):
-        super().__init__(device.buffer, device.depth)
-        self.__device = device
-
-    def __enter__(self):
-        self.__device.__enter__()
-        super().__enter__()
-        return self
-
-    def show(self):
-        super().show()
-        self.__device.show()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        super().__exit__(exc_type, exc_val, exc_tb)
-        self.__device.__exit__(exc_type, exc_val, exc_tb)

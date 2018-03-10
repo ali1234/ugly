@@ -23,7 +23,16 @@ def main():
 
     args = Args()
 
-    with Display(device=args.device, driver=args.driver, monitor=args.monitor) as display:
+    with Display(device=args.device, driver=args.driver) as display:
+        monitor = display.connect_monitor(args.monitor)
+
+        if isinstance(display, Virtual):
+            display.orientation = args.orientation
+
+        if isinstance(monitor, Virtual):
+            monitor.orientation = args.orientation
+
+        display.rotation = args.rotation
 
         effect_time = 10  # seconds
         effects_count = 0
@@ -32,13 +41,6 @@ def main():
             (intro_effect(display.width, display.height), effect_time),
             (random_effect(display.width, display.height), effect_time),
         ]
-
-        print (args.rotation)
-
-        display.rotation = args.rotation
-
-        if isinstance(display, Virtual):
-            display.orientation = args.orientation
 
         now = time.monotonic()
 
@@ -77,7 +79,7 @@ def main():
                     break
 
         except KeyboardInterrupt:
-            pass
+            raise
 
 if __name__ == '__main__':
     main()
