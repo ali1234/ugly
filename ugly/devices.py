@@ -93,7 +93,7 @@ def blinkt(driver='auto'):
             from ugly.drivers.legacy.blinkt import Blinkt
             return Blinkt()
         except ImportError:
-            raise
+            pass
     return Emulator(8, 1, 3, 8, driver=driver, name='Blinkt')
 
 def Display(device, driver='auto'):
