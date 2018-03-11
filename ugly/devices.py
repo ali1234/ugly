@@ -88,13 +88,12 @@ def scrollphat(driver='auto'):
 
 @device
 def blinkt(driver='auto'):
-    # broken - no numpy driver
     if driver == 'legacy' or driver == 'auto':
         try:
-            import blinkt
-            return Legacy(blinkt, blinkt._buf, 8, 'Blinkt')
+            from ugly.drivers.legacy.blinkt import Blinkt
+            return Blinkt()
         except ImportError:
-            pass
+            raise
     return Emulator(8, 1, 3, 8, driver=driver, name='Blinkt')
 
 def Display(device, driver='auto'):
