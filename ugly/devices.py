@@ -35,25 +35,36 @@ def unicornhathd(driver='auto'):
 
 @device
 def unicornhat(driver='auto'):
-    # broken - no numpy driver
     if driver == 'legacy' or driver == 'auto':
         try:
-            import unicornhat
-            return Legacy(unicornhat, unicornhat._buf, 8, 'UnicornHat')
+            from ugly.drivers.legacy.ws2812 import WS2812
+            return WS2812(8, 8, serpentine=True, name='UnicornHat')
         except ImportError:
             pass
     return Emulator(8, 8, 3, 8, driver=driver, name='UnicornHat')
 
 @device
 def unicornphat(driver='auto'):
-    # broken - no numpy driver
     if driver == 'legacy' or driver == 'auto':
         try:
-            import unicornhat
-            return Legacy(unicornhat, unicornhat._buf[:4,:,:], 8, 'UnicornPhat')
+            from ugly.drivers.legacy.ws2812 import WS2812
+            return WS2812(8, 4, serpentine=True, name='UnicornPhat')
         except ImportError:
             pass
     return Emulator(8, 4, 3, 8, driver=driver, name='UnicornPhat')
+
+@device
+def cjmcu8x8(driver='auto'):
+    """
+    Generic AliExpress 8x8 WS2812 Panel
+    """
+    if driver == 'legacy' or driver == 'auto':
+        try:
+            from ugly.drivers.legacy.ws2812 import WS2812
+            return WS2812(8, 8, serpentine=False, name='CJMCU 8x8')
+        except ImportError:
+            pass
+    return Emulator(8, 8, 3, 8, driver=driver, name='UnicornPhat')
 
 @device
 def scrollphathd(driver='auto'):
@@ -67,7 +78,6 @@ def scrollphathd(driver='auto'):
 
 @device
 def scrollphat(driver='auto'):
-    # broken - no numpy driver
     if driver == 'legacy' or driver == 'auto':
         try:
             from ugly.drivers.legacy.scrollphat import ScrollPhat
