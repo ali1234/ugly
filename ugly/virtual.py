@@ -20,19 +20,19 @@ def Emulator(width, height, channels, depth, driver='auto', name=None):
 
     if driver == 'sdl' or driver == 'auto' or driver == 'autoemu':
         try:
-            from ugly.drivers.sdl import SDL
+            from ugly.drivers.virtual.sdl import SDL
             return SDL(rawbuf, depth, name=name)
         except ImportError:
             pass
     if driver == 'terminal' or driver == 'auto' or driver == 'autoemu':
         try:
-            from ugly.drivers.terminal import Terminal
+            from ugly.drivers.virtual.terminal import Terminal
             return Terminal(rawbuf, depth, name=name)
         except ImportError:
             pass
     if driver == 'ffmpeg': # don't select this one automatically
         try:
-            from ugly.drivers.ffmpeg import Ffmpeg
+            from ugly.drivers.virtual.ffmpeg import Ffmpeg
             return Ffmpeg(rawbuf, depth, name=name)
         except ImportError:
             pass
@@ -50,19 +50,19 @@ def Monitor(device, driver="auto"):
 
     if driver == 'sdl' or driver == 'auto':
         try:
-            from ugly.drivers.sdl import SDLMonitor
+            from ugly.drivers.virtual.sdl import SDLMonitor
             return SDLMonitor(device.rawbuf, device.depth, name=name)
         except ImportError:
             pass
     if driver == 'terminal' or driver == 'auto':
         try:
-            from ugly.drivers.terminal import TerminalMonitor
+            from ugly.drivers.virtual.terminal import TerminalMonitor
             return TerminalMonitor(device.rawbuf, device.depth, name=name)
         except ImportError:
             pass
     if driver == 'ffmpeg': # don't select this one automatically
         try:
-            from ugly.drivers.ffmpeg import FfmpegMonitor
+            from ugly.drivers.virtual.ffmpeg import FfmpegMonitor
             return FfmpegMonitor(device.rawbuf, device.depth, name=name)
         except ImportError:
             pass
