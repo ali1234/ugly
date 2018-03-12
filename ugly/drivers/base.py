@@ -22,6 +22,8 @@ class Driver(Buffer):
         super().__init__(rawbuf, depth) # object or Virtual
         self.__monitor = None
         self.__name = name
+        self.__gamma = 1
+        self.__gammalut = None
 
     @property
     def name(self):
@@ -29,6 +31,25 @@ class Driver(Buffer):
             return type(self).__name__
         else:
             return self.__name
+
+    @property
+    def gamma(self):
+        return self.__gamma
+
+    @gamma.setter
+    def gamma(self, g):
+        self.__gamma = g
+        if g == 1.0:
+            self.__gammalut = None
+        else:
+            self.__gammalut = (((np.arange(0, 256) / 255) ** 2.25) * 255).astype(np.uint8)
+
+    @property
+    def gammabuf(self):
+        if self.__gammalut is None:
+            return self.rawbuf
+        else:
+            return self.__gammalut.take(self.rawbuf)
 
     def __enter__(self):
         return self
@@ -70,9 +91,9 @@ class Virtual(Driver):
         Helper to convert buffer for display.
         """
         if self.depth == 1:
-            outbuf = ((self.rawbuf & 0x80) > 0) * 255
+            outbuf = ((self.gammabuf & 0x80) > 0) * 255
         else:
-            outbuf = self.rawbuf
+            outbuf = self.gammabuf
 
         return np.rot90(outbuf, self.orientation, axes=(0, 1))
 

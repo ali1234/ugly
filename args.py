@@ -41,6 +41,10 @@ def Args():
                         help="""
                         Vertically flip the logical display.
                         """)
+    parser.add_argument('-g', '--gamma', type=float, default=1.0,
+                        help="""
+                        Display gamma.
+                        """)
 
     args = parser.parse_args()
 

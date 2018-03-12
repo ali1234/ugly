@@ -32,6 +32,7 @@ def main():
         if isinstance(monitor, Virtual):
             monitor.orientation = args.orientation
 
+        display.gamma = args.gamma
         display.rotation = args.rotation
         display.flip_horizontal = args.flip_h
         display.flip_vertical = args.flip_v
