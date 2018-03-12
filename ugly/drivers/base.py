@@ -42,7 +42,7 @@ class Driver(Buffer):
         if g == 1.0:
             self.__gammalut = None
         else:
-            self.__gammalut = (((np.arange(0, 256) / 255) ** 2.25) * 255).astype(np.uint8)
+            self.__gammalut = (((np.arange(0, 256) / 255) ** self.__gamma) * 255).astype(np.uint8)
 
     @property
     def gammabuf(self):
