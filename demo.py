@@ -82,7 +82,7 @@ def main():
                     break
 
         except KeyboardInterrupt:
-            raise
+            pass
 
 if __name__ == '__main__':
     main()

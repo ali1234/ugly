@@ -64,6 +64,14 @@ class SDLMonitor(Virtual):
         s[:,:,0] = imbuf[:,:,b]
         self.window.refresh()
         super().show()
+        # quick hack to quit the program if the window close button is clicked.
+        # you won't be able to quit this way if the main loop isn't showing anything.
+        # but it's better than nothing. :)
+        events = sdl2.ext.get_events()
+        for event in events:
+            if event.type == sdl2.SDL_WINDOWEVENT:
+                if event.window.event == sdl2.SDL_WINDOWEVENT_CLOSE:
+                    raise KeyboardInterrupt
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         super().__exit__(exc_type, exc_val, exc_tb)
