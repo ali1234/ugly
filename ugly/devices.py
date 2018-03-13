@@ -8,6 +8,8 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
+import numpy as np
+
 from ugly.virtual import Emulator
 
 devices = {}
@@ -68,6 +70,12 @@ def cjmcu8x8(driver='auto'):
 
 @device
 def scrollphathd(driver='auto'):
+    if driver == 'native' or driver == 'auto':
+        try:
+            from ugly.drivers.hardware.is31fl3731 import ScrollPhatHD
+            return ScrollPhatHD()
+        except ImportError:
+            raise
     if driver == 'legacy' or driver == 'auto':
         try:
             from ugly.drivers.legacy.scrollphathd import ScrollPhatHD
