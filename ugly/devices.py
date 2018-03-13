@@ -84,6 +84,12 @@ def scrollphathd(driver='auto'):
 
 @device
 def scrollphat(driver='auto'):
+    if driver == 'native' or driver == 'auto':
+        try:
+            from ugly.drivers.hardware.is31fl3730 import ScrollPhat
+            return ScrollPhat()
+        except ImportError:
+            raise
     if driver == 'legacy' or driver == 'auto':
         try:
             from ugly.drivers.legacy.scrollphat import ScrollPhat
