@@ -91,7 +91,7 @@ class Virtual(Driver):
         Helper to convert buffer for display.
         """
         if self.depth == 1:
-            outbuf = ((self.gammabuf & 0x80) > 0) * 255
+            outbuf = (self.gammabuf > 0x7f) * 255
         else:
             outbuf = self.gammabuf
 
