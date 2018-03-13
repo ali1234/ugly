@@ -10,12 +10,11 @@
 
 import numpy as np
 
-from ugly.buffer import Drawable
 from ugly.drivers.base import Driver
 
 import blinkt
 
-class Blinkt(Driver, Drawable):
+class Blinkt(Driver):
     """
     Legacy driver. Passes through calls to some other driver.
     """
@@ -23,15 +22,8 @@ class Blinkt(Driver, Drawable):
     def __init__(self):
         super().__init__(np.zeros((1, 8, 3), dtype=np.uint8), 8, name='Blinkt')
 
-    def __enter__(self):
-        return super().__enter__()
-
     def show(self):
         blinkt.pixels = np.pad(self.rawbuf, ((0,0),(0,0),(0,1)), mode='constant', constant_values=blinkt.BRIGHTNESS)[0].tolist()
         blinkt.show()
         super().show()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.rawbuf[:] = 0
-        self.show()
-        super().__exit__(exc_type, exc_val, exc_tb)

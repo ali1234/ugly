@@ -13,8 +13,7 @@ import numpy as np
 import sdl2
 import sdl2.ext
 
-from ugly.buffer import Drawable
-from ugly.drivers.base import Virtual
+from ugly.drivers.base import Driver, Virtual
 
 
 sdl2.ext.init()
@@ -73,10 +72,7 @@ class SDLMonitor(Virtual):
                 if event.window.event == sdl2.SDL_WINDOWEVENT_CLOSE:
                     raise KeyboardInterrupt
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        super().__exit__(exc_type, exc_val, exc_tb)
 
-
-class SDL(SDLMonitor, Drawable):
+class SDL(SDLMonitor, Driver):
     pass
 

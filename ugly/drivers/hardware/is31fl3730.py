@@ -2,12 +2,11 @@ import time
 import numpy as np
 import smbus
 
-from ugly.buffer import Drawable
 from ugly.drivers.base import Driver
 from ugly.drivers.hardware.i2c import Register
 
 
-class IS31FL3730(Driver, Drawable):
+class IS31FL3730(Driver):
 
     mode = Register(0x00)
     data = Register(0x01)
@@ -25,11 +24,6 @@ class IS31FL3730(Driver, Drawable):
         outbuf = np.packbits(bits, axis=0).flatten().tolist()
         outbuf.append(0xff)
         self.data = outbuf
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.rawbuf[:] = 0
-        self.show()
-        super().__exit__(exc_type, exc_val, exc_tb)
 
 
 class ScrollPhat(IS31FL3730):

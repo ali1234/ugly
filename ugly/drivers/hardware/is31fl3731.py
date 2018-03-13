@@ -2,7 +2,6 @@ import time
 import numpy as np
 import smbus
 
-from ugly.buffer import Drawable
 from ugly.drivers.base import Driver
 from ugly.drivers.hardware.i2c import Register, BankedRegister
 
@@ -14,7 +13,7 @@ AUTOPLAY_MODE = 0x08
 AUDIOPLAY_MODE = 0x18
 
 
-class IS31FL3731(Driver, Drawable):
+class IS31FL3731(Driver):
 
     bank = Register(BANK_REGISTER)
 
@@ -61,11 +60,6 @@ class IS31FL3731(Driver, Drawable):
 
     def sleep(self, value):
         self.shutdown = not value
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.rawbuf[:] = 0
-        self.show()
-        super().__exit__(exc_type, exc_val, exc_tb)
 
 
 class ScrollPhatHD(IS31FL3731):

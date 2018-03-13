@@ -12,8 +12,7 @@ import subprocess
 import numpy as np
 from PIL import Image
 
-from ugly.buffer import Drawable
-from ugly.drivers.base import Virtual
+from ugly.drivers.base import Driver, Virtual
 
 
 class FfmpegMonitor(Virtual):
@@ -44,6 +43,6 @@ class FfmpegMonitor(Virtual):
         super().__exit__(exc_type, exc_val, exc_tb)
 
 
-class Ffmpeg(FfmpegMonitor, Drawable):
+class Ffmpeg(FfmpegMonitor, Driver):
     pass
 

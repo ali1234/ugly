@@ -36,6 +36,7 @@ def main():
         display.rotation = args.rotation
         display.flip_horizontal = args.flip_h
         display.flip_vertical = args.flip_v
+        display.clear_on_exit = not args.keep
 
         effect_time = 10  # seconds
         effects_count = 0

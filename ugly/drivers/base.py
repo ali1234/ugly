@@ -10,10 +10,10 @@
 
 import numpy as np
 
-from ugly.buffer import Buffer
-from ugly.virtual import Monitor
+from ugly.buffer import Buffer, Drawable
+from ugly.virtual import Monitor as GetMonitor
 
-class Driver(Buffer):
+class Monitor(Buffer):
     """
     Base for devices.
     """
@@ -63,7 +63,7 @@ class Driver(Buffer):
         if driver is None:
             return None
         self.disconnect_monitor()
-        self.__monitor = Monitor(self, driver).__enter__()
+        self.__monitor = GetMonitor(self, driver).__enter__()
         return self.__monitor
 
     def show(self):
@@ -74,8 +74,21 @@ class Driver(Buffer):
         self.disconnect_monitor()
 
 
+class Driver(Monitor, Drawable):
 
-class Virtual(Driver):
+    def __init__(self, rawbuf, depth, name = None):
+        super().__init__(rawbuf, depth, name=name)
+        self.clear_on_exit = True
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.clear_on_exit:
+            self.clear()
+            self.show()
+        super().__exit__(exc_type, exc_val, exc_tb)
+
+
+
+class Virtual(Monitor):
     """
     Base for virtual devices which are not backed by physical hardware.
     Provides emulation of physical properties.

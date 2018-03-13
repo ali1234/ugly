@@ -8,13 +8,12 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
-from ugly.buffer import Drawable
 from ugly.drivers.base import Driver
 
 import unicornhathd
 
 
-class UnicornHatHD(Driver, Drawable):
+class UnicornHatHD(Driver):
     """
     Legacy driver. Passes through calls to some other driver.
     """
@@ -22,13 +21,6 @@ class UnicornHatHD(Driver, Drawable):
     def __init__(self):
         super().__init__(unicornhathd._buf, 8, name='UnicornHatHD')
 
-    def __enter__(self):
-        return super().__enter__()
-
     def show(self):
         unicornhathd.show()
         super().show()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        unicornhathd.off()
-        super().__exit__(exc_type, exc_val, exc_tb)

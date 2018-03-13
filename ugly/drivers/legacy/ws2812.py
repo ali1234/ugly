@@ -10,7 +10,6 @@
 
 import numpy as np
 
-from ugly.buffer import Drawable
 from ugly.drivers.base import Driver
 
 from rpi_ws281x import PixelStrip
@@ -24,7 +23,7 @@ LED_CHANNEL    = 0       # PWM channel
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_GAMMA      = (((np.arange(0, 256) / 255) ** 2.25) * 255).astype(np.uint8).tolist()
 
-class WS2812(Driver, Drawable):
+class WS2812(Driver):
     """
     Legacy driver. Passes through calls to some other driver.
     """
@@ -49,8 +48,3 @@ class WS2812(Driver, Drawable):
             self.pixelstrip.setPixelColorRGB(i, *outbuf[i].tolist()) # ugh
         self.pixelstrip.show()
         super().show()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.rawbuf[:] = 0
-        self.show()
-        super().__exit__(exc_type, exc_val, exc_tb)

@@ -71,3 +71,6 @@ class Drawable(Buffer):
     @flip_vertical.setter
     def flip_vertical(self, flip):
         self.__flip_v = -1 if flip else 1
+
+    def clear(self):
+        self.rawbuf[:] = 0

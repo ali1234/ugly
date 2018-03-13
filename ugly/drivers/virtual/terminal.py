@@ -13,8 +13,7 @@ import sys
 
 import numpy as np
 
-from ugly.buffer import Drawable
-from ugly.drivers.base import Virtual
+from ugly.drivers.base import Driver, Virtual
 
 
 class TerminalMonitor(Virtual):
@@ -48,6 +47,6 @@ class TerminalMonitor(Virtual):
         super().__exit__(exc_type, exc_val, exc_tb)
 
 
-class Terminal(TerminalMonitor, Drawable):
+class Terminal(TerminalMonitor, Driver):
     pass
 

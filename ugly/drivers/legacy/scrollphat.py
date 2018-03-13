@@ -10,13 +10,12 @@
 
 import numpy as np
 
-from ugly.buffer import Drawable
 from ugly.drivers.base import Driver
 
 import scrollphat
 
 
-class ScrollPhat(Driver, Drawable):
+class ScrollPhat(Driver):
     """
     Legacy driver. Passes through calls to some other driver.
     """
@@ -24,15 +23,8 @@ class ScrollPhat(Driver, Drawable):
     def __init__(self):
         super().__init__(np.zeros((5, 11, 1), dtype=np.uint8), 1, name='ScrollPhat')
 
-    def __enter__(self):
-        return super().__enter__()
-
     def show(self):
         packed = np.packbits(np.pad( (self.rawbuf[::-1,:,0] & 0x80) > 0, ((3,0),(0,0)), mode='constant'), axis=0)
         scrollphat.set_buffer(packed[0].tolist())
         scrollphat.update()
         super().show()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        scrollphat.clear()
-        super().__exit__(exc_type, exc_val, exc_tb)

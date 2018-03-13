@@ -45,6 +45,10 @@ def Args():
                         help="""
                         Display gamma.
                         """)
+    parser.add_argument('-k', '--keep', action='store_true',
+                        help="""
+                        Don't clear the display at exit.
+                        """)
 
     args = parser.parse_args()
 
