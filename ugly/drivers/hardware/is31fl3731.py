@@ -4,62 +4,33 @@ import smbus
 
 from ugly.buffer import Drawable
 from ugly.drivers.base import Driver
+from ugly.drivers.hardware.i2c import Register, BankedRegister
 
 CONFIG_BANK = 0x0b
-BANK_ADDRESS = 0xfd
+BANK_REGISTER = 0xfd
 
 PICTURE_MODE = 0x00
 AUTOPLAY_MODE = 0x08
 AUDIOPLAY_MODE = 0x18
 
 
-class Register(object):
-
-    def __init__(self, offset):
-        self.__offset = offset
-
-    def __get__(self, obj, objtype):
-        return obj.i2c.readfrom_mem(obj.address, self.__offset, 1)[0]
-
-    def __set__(self, obj, value):
-        if type(value) is list:
-            for i in range(0, len(value), 32):
-                obj.i2c.write_i2c_block_data(obj.address, self.__offset+i, value[i:i+32])
-        else:
-            obj.i2c.write_i2c_block_data(obj.address, self.__offset, [value])
-
-
-class BankedRegister(Register):
-
-    def __init__(self, bank, offset):
-        super().__init__(offset)
-        self.__bank = bank
-
-    def __get__(self, obj, objtype):
-        obj.i2c.write_i2c_block_data(obj.address, BANK_ADDRESS, [self.__bank])
-        return super().__get__(obj, objtype)
-
-    def __set__(self, obj, value):
-        obj.i2c.write_i2c_block_data(obj.address, BANK_ADDRESS, [self.__bank])
-        return super().__set__(obj, value)
-
-
 class IS31FL3731(Driver, Drawable):
 
-    bank = Register(BANK_ADDRESS)
-    mode = BankedRegister(CONFIG_BANK, 0x00)
-    frame = BankedRegister(CONFIG_BANK, 0x01)
-    audiosync = BankedRegister(CONFIG_BANK, 0x06)
-    shutdown = BankedRegister(CONFIG_BANK, 0x0a)
+    bank = Register(BANK_REGISTER)
+
+    mode = BankedRegister(BANK_REGISTER, CONFIG_BANK, 0x00)
+    frame = BankedRegister(BANK_REGISTER, CONFIG_BANK, 0x01)
+    audiosync = BankedRegister(BANK_REGISTER, CONFIG_BANK, 0x06)
+    shutdown = BankedRegister(BANK_REGISTER, CONFIG_BANK, 0x0a)
 
     enable = Register(0x00)
     blink = Register(0x12)
     pwm = Register(0x24)
 
-    def __init__(self, rawbuf, depth, map, i2c=1, address=0x74, name='IS31FL3731'):
-        super().__init__(rawbuf, depth, name)
-        self.__i2c = smbus.SMBus(i2c)
-        self.__address = address
+    def __init__(self, rawbuf, map, bus=1, address=0x74, name='IS31FL3731'):
+        super().__init__(rawbuf, 8, name)
+        self._bus = smbus.SMBus(bus)
+        self._address = address
         self.__current_frame = 0
         self.__map = map
 
@@ -75,17 +46,10 @@ class IS31FL3731(Driver, Drawable):
             self.bank = bank
             self.enable = enable_pattern.tolist()
 
-    @property
-    def i2c(self):
-        return self.__i2c
-
-    @property
-    def address(self):
-        return self.__address
-
     def show(self):
         self.__current_frame += 1
         self.__current_frame %= 8 # use all the banks...
+
         self.bank = self.__current_frame
         self.pwm = self.gammabuf.flatten().take(self.__map, mode='clip').tolist()
         self.frame = self.__current_frame
@@ -118,6 +82,5 @@ class ScrollPhatHD(IS31FL3731):
         102,  85,  68,  51,  34,  17,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
     ], dtype=np.int16)
 
-    def __init__(self, i2c=1, name='ScrollPhatHD'):
-        super().__init__(np.zeros((7, 17, 1), dtype=np.uint8), 8, self.map, i2c=i2c, name=name)
-
+    def __init__(self, bus=1, name='ScrollPhatHD'):
+        super().__init__(np.zeros((7, 17, 1), dtype=np.uint8), self.map, bus=bus, name=name)
