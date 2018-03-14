@@ -63,8 +63,21 @@ def cjmcu8x8(driver='auto'):
             from ugly.drivers.legacy.ws2812 import WS2812
             return WS2812(8, 8, serpentine=False, name='CJMCU 8x8')
         except ImportError:
-            pass
-    return Emulator(8, 8, 3, 8, driver=driver, name='UnicornPhat')
+            raise
+    return Emulator(8, 8, 3, 8, driver=driver, name='CJMCU 8x8')
+
+@device
+def homebrew(driver='auto'):
+    """
+    DIY holtek panel, 15x7
+    """
+    if driver == 'native' or driver == 'auto':
+        try:
+            from ugly.drivers.hardware.ht16k33 import Homebrew
+            return Homebrew()
+        except ImportError:
+            raise
+    return Emulator(15, 7, 1, 1, driver=driver, name='Homebrew')
 
 @device
 def scrollphathd(driver='auto'):
