@@ -31,6 +31,7 @@ class HT16K33(Driver):
     def show(self):
         bits = (self.gammabuf > 0x7f).flatten().take(self.__map, mode='clip')
         self.data = np.packbits(bits, axis=0).flatten().tolist()
+        super().show()
 
 
 class Homebrew(HT16K33):

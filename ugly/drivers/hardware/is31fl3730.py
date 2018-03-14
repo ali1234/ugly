@@ -54,6 +54,7 @@ class IS31FL3730(Driver):
             self.data2 = np.packbits(bits, axis=0).flatten().tolist()
 
         self.update = 0
+        super().show()
 
 
 class ScrollPhat(IS31FL3730):

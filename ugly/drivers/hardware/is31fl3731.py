@@ -52,6 +52,7 @@ class IS31FL3731(Driver):
         self.bank = self.__current_frame
         self.pwm = self.gammabuf.flatten().take(self.__map, mode='clip').tolist()
         self.frame = self.__current_frame
+        super().show()
 
     def reset(self):
         self.sleep(True)
