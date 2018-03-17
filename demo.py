@@ -41,46 +41,46 @@ def main():
         effect_time = 10  # seconds
         effects_count = 0
         effects_limit = None
-        effects = [
-            (intro_effect(display.width, display.height), effect_time),
-            (random_effect(display.width, display.height), effect_time),
-        ]
+        effect = (intro_effect(display.width, display.height), effect_time)
+        next_effect = (random_effect(display.width, display.height), effect_time)
 
         now = time.monotonic()
+        start = now
 
         try:
             while True:
-                start = now
-                while True:
-                    if args.fixed_timestep:
-                        now += 1/30
-                    else:
-                        now = time.monotonic()
-                    remaining = effects[0][1] - (now - start)
-                    if remaining < 0:
-                        remaining = 0
-                    if display.channels == 3:
-                        display.buffer[:] = effects[0][0](now)
-                        if remaining < 1:
-                            display.buffer[:] = display.buffer * remaining
-                            display.buffer[:] = display.buffer + (effects[1][0](now) * (1-remaining))
-                    elif display.channels == 1:
-                        display.buffer[:,:,0] = effects[0][0](now)[:,:,1]
-                        if remaining < 1:
-                            display.buffer[:,:,0] = display.buffer[:,:,0] * remaining
-                            display.buffer[:,:,0] = display.buffer[:,:,0] + (effects[1][0](now)[:,:,1] * (1-remaining))
 
-                    display.show()
-                    if remaining == 0:
+                if args.fixed_timestep:
+                    now += 1/30
+                else:
+                    now = time.monotonic()
+
+                remaining = max(effect[1] - (now - start), 0)
+
+                if display.channels == 3:
+                    display.buffer[:] = effect[0](now)
+                    if remaining < 1:
+                        display.buffer[:] = display.buffer * remaining
+                        display.buffer[:] = display.buffer + (next_effect[0](now) * (1-remaining))
+
+                elif display.channels == 1:
+                    display.buffer[:,:,0] = effect[0](now)[:,:,1]
+                    if remaining < 1:
+                        display.buffer[:,:,0] = display.buffer[:,:,0] * remaining
+                        display.buffer[:,:,0] = display.buffer[:,:,0] + (next_effect[0](now)[:,:,1] * (1-remaining))
+
+                display.show()
+
+                if remaining == 0:
+                    start = now
+                    effect = next_effect
+                    next_effect = (random_effect(display.width, display.height), effect_time)
+                    effects_count += 1
+                    if effects_limit is not None and effects_count >= effects_limit:
                         break
 
-                    time.sleep(0.001)
+                time.sleep(0.001)
 
-                effects.pop(0)
-                effects.append((random_effect(display.width, display.height), effect_time))
-                effects_count += 1
-                if effects_limit is not None and effects_count >= effects_limit:
-                    break
 
         except KeyboardInterrupt:
             pass
