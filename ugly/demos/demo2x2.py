@@ -10,7 +10,7 @@
 # * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # * GNU General Public License for more details.
 
-from effects import random_effect, intro_effect
+from ugly.demos.effects import random_effect, intro_effect
 
 
 def main():

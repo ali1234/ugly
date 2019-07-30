@@ -11,13 +11,12 @@
 # * GNU General Public License for more details.
 
 import time
-import numpy as np
 
 from ugly.devices import Display
 from ugly.drivers.base import Virtual
 
-from effects import random_effect, intro_effect
-from args import Args
+from ugly.demos.effects import random_effect, intro_effect
+from ugly.demos.args import Args
 
 def main():
 
