@@ -23,6 +23,12 @@ def GetDevices():
 # It can autoselect based on what modules are available!
 
 @device
+def terminal(driver='terminal'):
+    from shutil import get_terminal_size
+    size = get_terminal_size((16, 16))
+    return Emulator((size.columns-2)//2, size.lines-2, 3, 8, driver='terminal', name='Terminal')
+
+@device
 def unicornhathd(driver='auto'):
     # tested working
     if driver == 'legacy' or driver == 'auto':
