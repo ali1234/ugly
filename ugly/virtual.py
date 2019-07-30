@@ -22,7 +22,7 @@ def Emulator(width, height, channels, depth, driver='auto', name=None):
         try:
             from ugly.drivers.virtual.sdl import SDL
             return SDL(rawbuf, depth, name=name)
-        except ImportError:
+        except Exception:
             pass
     if driver == 'terminal' or driver == 'auto' or driver == 'autoemu':
         try:
