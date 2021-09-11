@@ -18,12 +18,13 @@ class Monitor(Buffer):
     Base for devices.
     """
 
-    def __init__(self, rawbuf: np.ndarray, depth: int, name = None):
+    def __init__(self, rawbuf: np.ndarray, depth: int, mask=None, name=None):
         super().__init__(rawbuf, depth) # object or Virtual
         self.__monitor = None
         self.__name = name
         self.__gamma = 1
         self.__gammalut = None
+        self.mask = mask
 
     @property
     def name(self):
@@ -76,8 +77,8 @@ class Monitor(Buffer):
 
 class Driver(Monitor, Drawable):
 
-    def __init__(self, rawbuf, depth, name = None):
-        super().__init__(rawbuf, depth, name=name)
+    def __init__(self, rawbuf, depth, mask=None, name=None):
+        super().__init__(rawbuf, depth, mask=mask, name=name)
         self.clear_on_exit = True
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -94,8 +95,8 @@ class Virtual(Monitor):
     Provides emulation of physical properties.
     """
 
-    def __init__(self, rawbuf: np.ndarray, depth: int, name = None):
-        super().__init__(rawbuf, depth, name)
+    def __init__(self, rawbuf: np.ndarray, depth: int, mask=None, name=None):
+        super().__init__(rawbuf, depth, mask=mask, name=name)
         self.__orientation = 0
         self.__scale = 16
 
@@ -107,6 +108,9 @@ class Virtual(Monitor):
             outbuf = (self.gammabuf > 0x7f) * 255
         else:
             outbuf = self.gammabuf
+
+        if self.mask is not None:
+            outbuf *= self.mask[:,:,np.newaxis]
 
         return np.rot90(outbuf, self.orientation, axes=(0, 1))
 
