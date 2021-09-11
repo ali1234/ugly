@@ -26,7 +26,7 @@ class TerminalMonitor(Virtual):
         if mask is not None:
             self.charmask = (mask * (0x25cf-ord(' '))) + ord(' ')
         else:
-            self.charmask = np.full_like(self.rawbuf, 0x25cf)
+            self.charmask = np.full(self.rawbuf.shape[:2], 0x25cf, dtype=np.int16)
 
     def __enter__(self):
         sys.stdout.write('\033[2J\033[?25l')
