@@ -21,6 +21,13 @@ class TerminalMonitor(Virtual):
     Emulates a graphics device on the terminal.
     """
 
+    def __init__(self, *args, mask=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if mask is not None:
+            self.charmask = (mask * (0x25cf-ord(' '))) + ord(' ')
+        else:
+            self.charmask = np.full_like(self.rawbuf, 0x25cf)
+
     def __enter__(self):
         sys.stdout.write('\033[2J\033[?25l')
         return super().__enter__()
@@ -32,12 +39,12 @@ class TerminalMonitor(Virtual):
 
         outbuf = self.convert_buffer()
 
-        for n, row in enumerate(outbuf):
-            sys.stdout.write('\033[{};0H'.format(n+2))
+        for y, row in enumerate(outbuf):
+            sys.stdout.write('\033[{};0H'.format(y+2))
+            sys.stdout.write('   ')
             s = ' '.join(
-                ('\033[38;2;{:d};{:d};{:d}m\u25cf'.format(pixel[r], pixel[g], pixel[b]) for pixel in row)
+                ('\033[38;2;{:d};{:d};{:d}m{:c}'.format(pixel[r], pixel[g], pixel[b], self.charmask[y, x]) for x, pixel in enumerate(row))
             )
-            sys.stdout.write('  ')
             sys.stdout.write(s)
         sys.stdout.flush()
         super().show()
