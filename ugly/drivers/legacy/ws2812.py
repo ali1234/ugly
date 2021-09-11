@@ -15,7 +15,6 @@ from ugly.drivers.base import Driver
 from rpi_ws281x import PixelStrip
 
 LED_COUNT      = 64      # Number of LED pixels.
-LED_PIN        = 18      # GPIO pin connected to the pixels (must support PWM!).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 10      # DMA channel to use for generating signal
 LED_BRIGHTNESS = 128     # Set to 0 for darkest and 255 for brightest
@@ -28,22 +27,25 @@ class WS2812(Driver):
     Legacy driver. Passes through calls to some other driver.
     """
 
-    def __init__(self, width, height, serpentine=False, name=None):
-        self.serpentine = serpentine
+    def __init__(self, width, height, led_pin=18, map=None, name=None):
+        self.map = map
+        if self.map is None:
+            n_leds = self.height * self.width
+        else:
+            n_leds = len(self.map)
         super().__init__(np.zeros((height, width, 3), dtype=np.uint8), 8, name=name)
-        self.pixelstrip = PixelStrip(self.height*self.width, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL, LED_GAMMA)
+        self.pixelstrip = PixelStrip(n_leds, led_pin, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL, LED_GAMMA)
 
     def __enter__(self):
         self.pixelstrip.begin()
         return super().__enter__()
 
     def show(self):
-        if self.serpentine:
-            # TODO: handle serpentine, but i don't have hardware to test :(
-            outbuf = self.rawbuf
+        if self.map is not None:
+            outbuf = self.rawbuf[self.map]
         else:
             outbuf = self.rawbuf
-        outbuf = outbuf.reshape(self.width*self.height, 3)
+        outbuf = outbuf.reshape(-1, 3)
         for i in range(outbuf.shape[0]):
             self.pixelstrip.setPixelColorRGB(i, *outbuf[i].tolist()) # ugh
         self.pixelstrip.show()
