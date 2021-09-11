@@ -121,5 +121,13 @@ def blinkt(driver='auto'):
             return Blinkt()
     return Emulator(8, 1, 3, 8, driver=driver, name='Blinkt')
 
+@device
+def tasbot(driver='auto'):
+    from ugly.drivers.legacy.tasbot import TasBot, mask
+    if driver == 'legacy' or driver == 'auto':
+        with probe(driver):
+            return TasBot(led_pin=10)
+    return Emulator(28, 8, 3, 8, driver=driver, mask=mask, name='TasBot')
+
 def Display(device, driver='auto'):
     return globals()[device.lower()](driver=driver.lower())
