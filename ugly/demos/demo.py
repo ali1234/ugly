@@ -18,6 +18,13 @@ from ugly.drivers.base import Virtual
 from ugly.demos.effects import random_effect, intro_effect
 from ugly.demos.args import Args
 
+import sys
+
+if not sys.warnoptions:
+    # stop annoying warning from PySDL2
+    import warnings
+    warnings.simplefilter("ignore")
+
 def main():
 
     args = Args()
